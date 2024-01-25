@@ -62,14 +62,16 @@ library(raster)
 #' @export
 config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, lonIni, latEnd, lonEnd, timeIni, timeEnd, varmin, varmax, varName, infoJs = NA, legend = "NaN", write = TRUE, zoom, lon_name, lat_name, time_name = "time") {
   if (missing(infoJs) || sum(!is.na(infoJs)) == 0) {
-    infoJs <- list(mapMinZoom = 2, mapMaxZoom = NA, legend = legend,
-                   varMin = NA, varMax = NA, levelcsv = NA, times = list(),
-                   latM = NA, lonM = NA, latIni = NA, latEnd = NA,
-                   lonIni = NA, lonEnd = NA,
-                   lonMin = list(), lonMax = list(), lonNum = list(),
-                   latMin = list(), latMax = list(), latNum = list(),
-                   timeMin = list(), timeMax = list(), timeNum = list(),
-                   varType = "f", compressed = TRUE, fillValue = list())
+    infoJs <- list(
+      mapMinZoom = 2, mapMaxZoom = NA, legend = legend,
+      varMin = NA, varMax = NA, levelcsv = NA, times = list(),
+      latM = NA, lonM = NA, latIni = NA, latEnd = NA,
+      lonIni = NA, lonEnd = NA,
+      lonMin = list(), lonMax = list(), lonNum = list(),
+      latMin = list(), latMax = list(), latNum = list(),
+      timeMin = list(), timeMax = list(), timeNum = list(),
+      varType = "f", compressed = TRUE, fillValue = list()
+    )
   }
 
   # CLARIFICATION!
@@ -216,13 +218,13 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
   infoJs$timeNum[[varName]] <- length(time_data)
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)
-  #infoJs$compressed <- if (is.na(nc$var[[var_name]]$compression)) "false" else "true"
-  infoJs$compressed <- "true"     # Se hardcodea a true dado que los ncs chunkeados tienen la compresión forzada
+  # infoJs$compressed <- if (is.na(nc$var[[var_name]]$compression)) "false" else "true"
+  infoJs$compressed <- "true" # Se hardcodea a true dado que los ncs chunkeados tienen la compresión forzada
 
   # Check if the missval attribute exists in the netCDF
   var_atts <- ncatt_get(nc, varid = nc$var[[var_name]])
-  #infoJs$fillValue[[varName]] <- if ("_FillValue" %in% names(var_atts)) nc$var[[var_name]]$missval else NaN
-  infoJs$fillValue[[varName]] <- NaN    # Se hardcodea a NaN dado que los ncs chunkeados tienen el missval forzado a NaN
+  # infoJs$fillValue[[varName]] <- if ("_FillValue" %in% names(var_atts)) nc$var[[var_name]]$missval else NaN
+  infoJs$fillValue[[varName]] <- NaN # Se hardcodea a NaN dado que los ncs chunkeados tienen el missval forzado a NaN
 
   if (write) {
     writeJs(folder, infoJs)
@@ -243,24 +245,24 @@ config_web <- function(file, folder, maxzoom, epsg, dates, formatdates, latIni, 
 #' @param digits digits
 #' @param value_array value_array
 #' @return None
-arrayRtojs <- function(name, value, type="character", digits=3, value_array=TRUE){
-  times = ""
-  for (t in names(value)){
-    if(times!=""){
-      times <- paste0(times, ", ") 
+arrayRtojs <- function(name, value, type = "character", digits = 3, value_array = TRUE) {
+  times <- ""
+  for (t in names(value)) {
+    if (times != "") {
+      times <- paste0(times, ", ")
     }
-    if(type=="character"){
+    if (type == "character") {
       sep <- "'"
       values <- value[[t]]
-    }else if(type=="date"){
+    } else if (type == "date") {
       sep <- "'"
       values <- as.Date(value[[t]])
-    }else{
+    } else {
       sep <- ""
-      values <- round(value[[t]], digits=digits)
+      values <- round(value[[t]], digits = digits)
     }
     if (value_array) {
-      times <- paste0(times, "'", t, "': [", sep, paste(values, collapse=paste0(sep, ",", sep)), sep, "]")
+      times <- paste0(times, "'", t, "': [", sep, paste(values, collapse = paste0(sep, ",", sep)), sep, "]")
     } else {
       times <- paste0(times, "'", t, "': ", sep, values[1], sep)
     }
@@ -273,24 +275,24 @@ arrayRtojs <- function(name, value, type="character", digits=3, value_array=TRUE
 #' @param name name
 #' @param value value
 #' @return None
-listRtojs <- function(name, value){
+listRtojs <- function(name, value) {
   library(jsonlite)
   times <- toJSON(value)
   times.write <- paste0("var ", name, " = ", times, ";\n")
   return(times.write)
 }
 
-generaltojs <- function(name, value.ori){
+generaltojs <- function(name, value.ori) {
   max <- dim(value.ori)[1]
   times <- ""
 
-  value <-  gsub("\\", "\\\\", value.ori, fixed=TRUE)
-  value <-  gsub("'", "\\'", value, fixed=TRUE)
-  for (i in 1:max){
-    if(times!=""){
+  value <- gsub("\\", "\\\\", value.ori, fixed = TRUE)
+  value <- gsub("'", "\\'", value, fixed = TRUE)
+  for (i in 1:max) {
+    if (times != "") {
       times <- paste0(times, ", ")
     }
-    text <- paste0("'", paste(value[i, ], collapse="', '"), "'")
+    text <- paste0("'", paste(value[i, ], collapse = "', '"), "'")
     times <- paste0(times, rownames(value)[i], ":", " ", "[", text, "]")
   }
 

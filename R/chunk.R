@@ -517,8 +517,7 @@ fusion_pen_can <- function(can_filename,
                            lon_name = "lon",
                            lat_name = "lat",
                            time_name = "time",
-                           grid_size
-  ) {
+                           grid_size) {
   # Select signif function or pass
   if (missing(signif_digits)) {
     adjust_prec <- function(x) x
@@ -702,7 +701,7 @@ fusion_pen_can <- function(can_filename,
     count = dim(var_data_can)
   )
   print("Canary written")
-  
+
   # Read all data for the Iberian Peninsula from the existing file in batches
   print("Peninsula read")
   # Reads the dimensions of the original file
