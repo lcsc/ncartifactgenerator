@@ -1,11 +1,19 @@
 Package: ncartifactgenerator
-Title: Artifacts Generator for Climate Viewers
+Type: Package
 Version: 1.0.0
+Date: 2024-02-05
+Title: Artifacts Generator for Climate Viewers
 Authors@R: c(person("Latorre Garcés", "Borja", role = c("aut", "cre"), email = "borja.latorre@csic.es", comment = c(ORCID = "0000-0002-6720-3326")), person("Reig Gracia", "Fergus", role = c("aut", "cre"), email = "fergusrg@gmail.com", comment = c(ORCID = "0000-0002-9482-1170")), person("Vilas Perulán", "Daniel", role = c("aut", "cre"), email = "dvilas@eead.csic.es"), person("Moreno Lamana", "Eduardo", role = c("aut", "cre"), email = "eduardo.moreno@ipe.csic.es"), person("Arretxea Iriarte", "Manuel", role = c("aut", "cre"), email = "m.arretxea@igeo.ucm-csic.es"))
 Author: Latorre Garcés Borja <borja.latorre@csic.es> [aut, cre]
 Maintainer: Reig Gracia Fergus <fergusrg@gmail.com>
+Depends: R (>= 1.8.0), js, sf, raster, R.utils, ncdf4, hdf5r, bit64
+Suggests: MASS, knitr, rmarkdown
 Description: It generates the necessary artifacts to be able to display NetCDF files through direct (serverless) requests.
 License: GPL (>= 3)
+URL: https://github.com/lcsc/ncartifactgenerator
+LazyLoad: no
 Encoding: UTF-8
+NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+VignetteBuilder: knitr
