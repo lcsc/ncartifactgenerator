@@ -307,6 +307,7 @@ generaltojs <- function(name, value.ori) {
 #' @param varNames varNames
 #' @param varTitle varTitle
 #' @param legendTitle legendTitle
+#' @param ncFragments ncFragments
 #' @param menuNames menuNames
 #' @param generalInformation generalInformation
 #' @param generalInformationNames generalInformationNames
@@ -316,7 +317,7 @@ generaltojs <- function(name, value.ori) {
 #' @param projection projection
 #' @return text written in the file
 #' @export
-writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title = "Map web", showDonwloadCoordinates = TRUE, projection = "EPSG:3857") {
+writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncFragments, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title = "Map web", showDonwloadCoordinates = TRUE, projection = "EPSG:3857") {
   file <- file.path(folder, "times.js")
 
   if (missing(varTitle)) {
@@ -348,6 +349,10 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
     legendTitle <- "Legend"
   }
 
+  if (missing(ncFragments)) {
+    ncFragments <- c("_pen", "_can")
+  }
+
   text.js <- ""
 
   text.js <- paste(text.js, paste0("var center = new L.LatLng(", infoJs$latM, ", ", infoJs$lonM, ");\n"))
@@ -369,7 +374,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   if (class(varNames) != "character") {
     text.js <- paste(text.js, listRtojs(name = "varNames", value = varNames))
   } else {
-    text.js <- paste(text.js, paste0("var varNames = ", "[", "'", paste(varNames, collapse = "', '"), "'", "]", ";\n"))
+    text.js <- paste(text.js, paste0("var varNames = ['", paste(varNames, collapse = "', '"), "'];\n"))
   }
   text.js <- paste(text.js, arrayRtojs(name = "varTitle", value = varTitle))
   # if(class(legendTitle)=="list"){ # Fallaba cuando legendTitle era un array
@@ -378,6 +383,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
   } else {
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
+  text.js <- paste(text.js, paste0("var ncFragments = '", paste(ncFragments, collapse = "', '"), "'];\n"))
   text.js <- paste(text.js, arrayRtojs(name = "menuNames", value = menuNames))
   ####
   if (!missing(generalInformation)) {
