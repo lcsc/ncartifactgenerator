@@ -383,7 +383,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncFragments
   } else {
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
-  text.js <- paste(text.js, paste0("var ncFragments = '", paste(ncFragments, collapse = "', '"), "'];\n"))
+  text.js <- paste(text.js, paste0("var ncFragments = ['", paste(ncFragments, collapse = "', '"), "'];\n"))
   text.js <- paste(text.js, arrayRtojs(name = "menuNames", value = menuNames))
   ####
   if (!missing(generalInformation)) {
