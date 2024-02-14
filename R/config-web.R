@@ -307,7 +307,7 @@ generaltojs <- function(name, value.ori) {
 #' @param varNames varNames
 #' @param varTitle varTitle
 #' @param legendTitle legendTitle
-#' @param ncFragments ncFragments
+#' @param ncPortionSuffix ncPortionSuffix
 #' @param menuNames menuNames
 #' @param generalInformation generalInformation
 #' @param generalInformationNames generalInformationNames
@@ -317,7 +317,7 @@ generaltojs <- function(name, value.ori) {
 #' @param projection projection
 #' @return text written in the file
 #' @export
-writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncFragments, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title = "Map web", showDonwloadCoordinates = TRUE, projection = "EPSG:3857") {
+writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncPortionSuffix, menuNames, generalInformation, generalInformationNames, extensionDownloadFile = "nc", title = "Map web", showDonwloadCoordinates = TRUE, projection = "EPSG:3857") {
   file <- file.path(folder, "times.js")
 
   if (missing(varTitle)) {
@@ -349,8 +349,8 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncFragments
     legendTitle <- "Legend"
   }
 
-  if (missing(ncFragments)) {
-    ncFragments <- c("_pen", "_can")
+  if (missing(ncPortionSuffix)) {
+    ncPortionSuffix <- c("_pen", "_can")
   }
 
   text.js <- ""
@@ -383,7 +383,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, ncFragments
   } else {
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
-  text.js <- paste(text.js, paste0("var ncFragments = ['", paste(ncFragments, collapse = "', '"), "'];\n"))
+  text.js <- paste(text.js, paste0("var ncPortionSuffix = ['", paste(ncPortionSuffix, collapse = "', '"), "'];\n"))
   text.js <- paste(text.js, arrayRtojs(name = "menuNames", value = menuNames))
   ####
   if (!missing(generalInformation)) {
