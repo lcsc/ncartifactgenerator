@@ -145,7 +145,7 @@ read_coords <- function(nc, epsg) {
 #' This function reads the minimum and maximum values of a variable from a NetCDF file.
 #'
 #' @param nc The NetCDF file object.
-#' 
+#'
 #' @return A list containing the minimum and maximum values of the variable.
 readMinMax <- function(nc) {
   var_name <- getVarName(nc)
@@ -191,7 +191,7 @@ timePosition <- function(nc) {
 
 #' Get var name of main variable in nc file
 #' @param nc open nc file
-#' 
+#'
 #' @return var name
 getVarName <- function(nc) {
   var_names <- names(nc$var)
@@ -241,7 +241,7 @@ arrayRtojs <- function(name, value, type = "character", digits = 3, value_array 
 #' Converts the data type of a variable or dimension of a netCDF to the data type codes used
 #' by the struct library.
 #' @param nc_type netCDF data type
-#' 
+#'
 #' @return struct data type
 get_struct_typecode <- function(nc_type) {
   result <- switch(nc_type,
