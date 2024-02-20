@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions.R
 \name{timePosition}
 \alias{timePosition}
-\title{dim time position}
+\title{timePosition}
 \usage{
 timePosition(nc)
 }
 \arguments{
-\item{nc}{open nc file}
+\item{nc}{A netCDF object.}
 }
 \value{
-max
+The position of the "time" dimension.
 }
 \description{
-dim time position
+This function returns the position of the "time" dimension in a netCDF object.
 }

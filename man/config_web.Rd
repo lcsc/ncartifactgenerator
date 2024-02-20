@@ -2,76 +2,51 @@
 % Please edit documentation in R/config-web.R
 \name{config_web}
 \alias{config_web}
-\title{write web configuration}
+\title{Web configuration}
 \usage{
 config_web(
   file,
   folder,
-  maxzoom,
   epsg,
-  dates,
   formatdates,
-  latIni,
-  lonIni,
-  latEnd,
-  lonEnd,
-  timeIni,
-  timeEnd,
   varmin,
   varmax,
   varName,
   infoJs = NA,
-  legend = "NaN",
-  write = TRUE,
-  zoom,
   lon_name,
   lat_name,
-  time_name = "time"
+  time_name = "time",
+  portion_suffix
 )
 }
 \arguments{
-\item{file}{file nc}
+\item{file}{Path to the netCDF file.}
 
-\item{folder}{folder}
+\item{folder}{Path to the output folder.}
 
-\item{epsg}{epsg}
+\item{epsg}{EPSG code for spatial projection.}
 
-\item{dates}{dates}
+\item{formatdates}{Date format for time variables.}
 
-\item{formatdates}{formatdates}
+\item{varmin}{Minimum value for the main variable.}
 
-\item{latIni}{latIni}
+\item{varmax}{Maximum value for the main variable.}
 
-\item{lonIni}{lonIni}
+\item{varName}{Name of the netCDF file without the .nc extension.}
 
-\item{latEnd}{latEnd}
+\item{infoJs}{List with additional information in JavaScript format.}
 
-\item{lonEnd}{lonEnd}
+\item{lon_name}{Name of the longitude dimension.}
 
-\item{timeIni}{timeIni}
+\item{lat_name}{Name of the latitude dimension.}
 
-\item{timeEnd}{timeEnd}
+\item{time_name}{Name of the time dimension.}
 
-\item{varmin}{varmin}
-
-\item{varName}{varName}
-
-\item{infoJs}{infoJs}
-
-\item{legend}{legend}
-
-\item{write}{true si se escribe el fichero js al terminar la ejecución; implica que la web solo muestra un "mapa"; en otro caso se supone que la web tendrá más de un mapa}
-
-\item{zoom}{zoom}
-
-\item{lon_name}{lon_name}
-
-\item{lat_name}{lat_name}
-
-\item{time_name}{time_name}
-
-\item{maxZoom}{maxZoom}
+\item{portion}{Portion of the netCDF file to process.}
+}
+\value{
+List with the generated web configuration.
 }
 \description{
-write web configuration
+This function generates the web configuration for a specific netCDF file.
 }

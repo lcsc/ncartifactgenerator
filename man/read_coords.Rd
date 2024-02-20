@@ -2,18 +2,19 @@
 % Please edit documentation in R/functions.R
 \name{read_coords}
 \alias{read_coords}
-\title{read coords}
+\title{Read coordinates from a NetCDF file}
 \usage{
 read_coords(nc, epsg)
 }
 \arguments{
-\item{nc}{nc}
+\item{nc}{The NetCDF file object.}
 
-\item{epsg}{epsg}
+\item{epsg}{The EPSG code specifying the coordinate reference system (CRS).}
 }
 \value{
-coords
+A data frame containing the longitude and latitude coordinates.
 }
 \description{
-read coords
+This function reads the longitude and latitude coordinates from a NetCDF file
+and returns them as a data frame.
 }

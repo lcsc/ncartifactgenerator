@@ -2,16 +2,21 @@
 % Please edit documentation in R/functions.R
 \name{returnXYNames}
 \alias{returnXYNames}
-\title{read dims names}
+\title{Return the names of the X and Y dimensions in a NetCDF object}
 \usage{
 returnXYNames(nc)
 }
 \arguments{
-\item{nc}{nc}
+\item{nc}{A NetCDF object.}
 }
 \value{
-list Y X
+A list containing the names and positions of the X and Y dimensions.
 }
 \description{
-read dims names
+This function takes a NetCDF object as input and returns the names of the X and Y dimensions.
+If the dimensions are named "Y" and "X", the function will return these names along with their positions.
+If the dimensions are named "latitude" and "longitude", the function will return "latitude" as the Y dimension name,
+"longitude" as the X dimension name, and their positions.
+If the dimensions are named "lat" and "lon", the function will return "lat" as the Y dimension name,
+"lon" as the X dimension name, and their positions.
 }

@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions.R
 \name{read_epsg}
 \alias{read_epsg}
-\title{read epsg}
+\title{Read EPSG code from NetCDF file}
 \usage{
 read_epsg(nc)
 }
 \arguments{
-\item{nc}{nc}
+\item{nc}{The NetCDF file object.}
 }
 \value{
-epsg
+The EPSG code as a numeric value.
 }
 \description{
-read epsg
+This function reads the EPSG code from a NetCDF file.
 }
