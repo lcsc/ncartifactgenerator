@@ -34,11 +34,13 @@
 #' @import sf
 #' @import ncdf4
 #' @import raster
+#' @import jsonlite
 
 library(js)
 library(sf)
 library(ncdf4)
 library(raster)
+library(jsonlite)
 
 
 #' Web configuration
@@ -226,4 +228,55 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
 
   write(text.js, file = file, append = FALSE)
   return(text.js)
+}
+
+#' Write JSON string with configuration data
+#'
+#' This function generates a JSON string with configuration data similar to the JavaScript variables in writeJs.
+#'
+#' @param infoJs A list containing the configuration data, including times, variable minimum and maximum values, latitude and longitude ranges, and EPSG code.
+#' @param varTitle The title of the variable.
+#' @param legendTitle The title of the legend (optional, default is "Legend").
+#' @param ncPortionSuffix A character vector specifying the portion suffixes for the variable (optional, default is c("_pen", "_can")).
+#' @param offsetType The type of offset (optional, default is "Q").
+#' @param sizeType The type of size (optional, default is "I").
+#'
+#' @return The generated JSON string.
+#'
+#' @export
+writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionSuffix = c("_pen", "_can"), offsetType = "Q", sizeType = "I") {
+  file <- file.path(folder, "times.json")
+
+  json <- list()
+
+  # Center of all the maps
+  lonM <- mean(c(min(unlist(infoJs$lonMin)), max(unlist(infoJs$lonMax))))
+  latM <- mean(c(min(unlist(infoJs$latMin)), max(unlist(infoJs$latMax))))
+
+  json$center <- list(lat = latM, lon = lonM)
+  json$times <- infoJs$times
+  json$varMin <- infoJs$varmin
+  json$varMax <- infoJs$varmax
+  json$varTitle <- varTitle
+  if (length(legendTitle) > 1) {
+    json$legendTitle <- legendTitle
+  } else {
+    json$legendTitle <- list("NaN" = list(legendTitle))
+  }
+  json$ncPortionSuffix <- ncPortionSuffix
+  json$lonMin <- infoJs$lonMin
+  json$lonMax <- infoJs$lonMax
+  json$lonNum <- infoJs$lonNum
+  json$latMin <- infoJs$latMin
+  json$latMax <- infoJs$latMax
+  json$latNum <- infoJs$latNum
+  json$varType <- infoJs$varType
+  json$offsetType <- offsetType
+  json$sizeType <- sizeType
+  json$projection <- paste0("EPSG:", infoJs$epsg)
+
+  jsonString <- toJSON(json, auto_unbox = TRUE, pretty = FALSE)
+
+  write(jsonString, file = file, append = FALSE)
+  return(jsonString)
 }
