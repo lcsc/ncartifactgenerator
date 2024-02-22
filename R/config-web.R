@@ -350,7 +350,7 @@ writeJs <- function(folder, infoJs, varNames, varTitle, legendTitle, menuNames, 
 
   text.js <- ""
 
-  text.js <- paste(text.js, paste0("var center = new L.LatLng(", infoJs$latM, ", ", infoJs$lonM, ");\n"))
+  text.js <- paste(text.js, paste0("var center = {'lat': ", infoJs$latM, ", 'lng': ", infoJs$lonM, "};\n"))
 
   lat_lon.write <- paste0("var marginBounds = L.latLngBounds(L.latLng(", infoJs$latIni, ", ", infoJs$lonIni, "), L.latLng(", infoJs$latEnd, ", ", infoJs$lonEnd, "));\n")
   text.js <- paste(text.js, lat_lon.write)
