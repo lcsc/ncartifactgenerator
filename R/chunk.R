@@ -135,7 +135,19 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
   if (lon_by == lon_num && lat_by == lat_num) {
     # Read/write data at once
     var_data <- adjust_prec(ncvar_get(nc_in_file, var))
-    ncvar_put(nc_out_file, var, var_data)
+    tryCatch(
+      {
+        ncvar_put(nc_out_file, var, var_data)
+      },
+      error = function(e) {
+        if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+          print("Former error is actually a warning")
+        } else {
+          print("ERROR")
+          stop(e)
+        }
+      }
+    )
   } else {
     # Read/write data in batches
     for (x in seq(1, lon_num, by = lon_by)) {
@@ -145,7 +157,19 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
         y_rest <- lat_num - y + 1
         y_count <- if (y_rest >= lat_by) lat_by else y_rest
         var_data <- adjust_prec(ncvar_get(nc_in_file, var, start = c(x, y, 1), count = c(x_count, y_count, time_num)))
-        ncvar_put(nc_out_file, var, var_data, start = c(x, y, 1), count = c(x_count, y_count, time_num))
+        tryCatch(
+          {
+            ncvar_put(nc_out_file, var, var_data, start = c(x, y, 1), count = c(x_count, y_count, time_num))
+          },
+          error = function(e) {
+            if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+              print("Former error is actually a warning")
+            } else {
+              print("ERROR")
+              stop(e)
+            }
+          }
+        )
       }
     }
   }
@@ -250,14 +274,38 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name = "lon",
   if (time_by == time_num) {
     # Read/write data at once
     var_data <- adjust_prec(ncvar_get(nc_in_file, var))
-    ncvar_put(nc_out_file, var, var_data)
+    tryCatch(
+      {
+        ncvar_put(nc_out_file, var, var_data)
+      },
+      error = function(e) {
+        if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+          print("Former error is actually a warning")
+        } else {
+          print("ERROR")
+          stop(e)
+        }
+      }
+    )
   } else {
     # Read/write data in batches
     for (t in seq(1, time_num, by = time_by)) {
       t_rest <- time_num - t + 1
       t_count <- if (t_rest >= time_by) time_by else t_rest
       var_data <- adjust_prec(ncvar_get(nc_in_file, var_name, start = c(1, 1, t), count = c(lon_num, lat_num, t_count)))
-      ncvar_put(nc_out_file, var, var_data, start = c(1, 1, t), count = c(lon_num, lat_num, t_count))
+      tryCatch(
+        {
+          ncvar_put(nc_out_file, var, var_data, start = c(1, 1, t), count = c(lon_num, lat_num, t_count))
+        },
+        error = function(e) {
+          if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+            print("Former error is actually a warning")
+          } else {
+            print("ERROR")
+            stop(e)
+          }
+        }
+      )
     }
   }
 
@@ -696,9 +744,21 @@ fusion_pen_can <- function(can_filename,
     var_data_can <- array(var_data_can, dim = c(dim(var_data_can)[1], dim(var_data_can)[2], 1))
   }
   # Write all data for the Canary Islands to the new file
-  ncvar_put(nc, var, var_data_can,
-    start = c(can_lon_start, can_lat_start, 1),
-    count = dim(var_data_can)
+  tryCatch(
+    {
+      ncvar_put(nc, var, var_data_can,
+        start = c(can_lon_start, can_lat_start, 1),
+        count = dim(var_data_can)
+      )
+    },
+    error = function(e) {
+      if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+        print("Former error is actually a warning")
+      } else {
+        print("ERROR")
+        stop(e)
+      }
+    }
   )
   print("Canary written")
 
@@ -721,7 +781,19 @@ fusion_pen_can <- function(can_filename,
     if (length(dim(var_data)) == 2) {
       var_data <- array(var_data, dim = c(dim(var_data)[1], dim(var_data)[2], 1))
     }
-    ncvar_put(nc, var, var_data, start = c(pen_lon_start, pen_lat_start, t), count = dim(var_data))
+    tryCatch(
+      {
+        ncvar_put(nc, var, var_data, start = c(pen_lon_start, pen_lat_start, t), count = dim(var_data))
+      },
+      error = function(e) {
+        if (grepl("C function Rsx_nc4_put_vara_double returned error", e$message)) {
+          print("Former error is actually a warning")
+        } else {
+          print("ERROR")
+          stop(e)
+        }
+      }
+    )
   }
   print("Peninsula written")
 
