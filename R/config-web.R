@@ -198,11 +198,8 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
 
   text.js <- ""
 
-  # Center of all the maps
-  lonM <- mean(c(min(unlist(infoJs$lonMin)), max(unlist(infoJs$lonMax))))
-  latM <- mean(c(min(unlist(infoJs$latMin)), max(unlist(infoJs$latMax))))
+  text.js <- paste(text.js, paste0("var center = {'lat': ", infoJs$latM, ", 'lng': ", infoJs$lonM, "};\n"))
 
-  text.js <- paste(text.js, paste0("var center = new L.LatLng(", latM, ", ", lonM, ");\n"))
   text.js <- paste(text.js, arrayRtojs(name = "times", value = infoJs$times, type = "date"))
   text.js <- paste(text.js, arrayRtojs(name = "varMin", value = infoJs$varmin, type = "numeric"))
   text.js <- paste(text.js, arrayRtojs(name = "varMax", value = infoJs$varmax, type = "numeric"))
