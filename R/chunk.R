@@ -124,8 +124,52 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
   }
   var <- do.call(ncvar_def, args)
 
+  # Define the CRS variable
+  varCRS <- ncdf4::ncvar_def(
+    name = "crs",
+    units = "",
+    dim = list(),
+    longname = "CRS definition",
+    prec = "integer"
+  )
+
   # Final file creation
-  nc_out_file <- nc_create(out_file, list(var), force_v4 = TRUE)
+  nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
+
+  # Link the variable to the projection variable using the
+  # grid_mapping attribute
+  ncdf4::ncatt_put(nc_out_file, var_name, "grid_mapping", "crs")
+
+  # CRS attributes
+  ncdf4::ncatt_put(nc_out_file, "crs", "grid_mapping_name", "latitude_longitude")
+  ncdf4::ncatt_put(nc_out_file, "crs", "longitude_of_prime_meridian", 0.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "semi_major_axis", 6378137.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "inverse_flattening", 298.257223563)
+  ncdf4::ncatt_put(nc_out_file, "crs", "crs_wkt", 'GEOGCRS["WGS 84", ENSEMBLE["World Geodetic System 1984 ensemble",
+                 MEMBER["World Geodetic System 1984 (Transit)"],
+                 MEMBER["World Geodetic System 1984 (G730)"],
+                 MEMBER["World Geodetic System 1984 (G873)"],
+                 MEMBER["World Geodetic System 1984 (G1150)"],
+                 MEMBER["World Geodetic System 1984 (G1674)"],
+                 MEMBER["World Geodetic System 1984 (G1762)"],
+                 MEMBER["World Geodetic System 1984 (G2139)"],
+                 ELLIPSOID["WGS 84",6378137,298.257223563,
+                           LENGTHUNIT["metre",1]],
+                 ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+               ANGLEUNIT["degree",0.0174532925199433]],
+        CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+             ORDER[1],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+             ORDER[2],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        USAGE[
+          SCOPE["Horizontal component of 3D system."],
+          AREA["World."],
+          BBOX[-90,-180,90,180]],
+        ID["EPSG",4326]]')
 
   # Select signif function or pass
   if (missing(signif_digits)) {
@@ -263,8 +307,52 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name = "lon",
   }
   var <- do.call(ncvar_def, args)
 
+  # Define the CRS variable
+  varCRS <- ncdf4::ncvar_def(
+    name = "crs",
+    units = "",
+    dim = list(),
+    longname = "CRS definition",
+    prec = "integer"
+  )
+
   # Final file creation
-  nc_out_file <- nc_create(out_file, list(var), force_v4 = TRUE)
+  nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
+
+  # Link the variable to the projection variable using the
+  # grid_mapping attribute
+  ncdf4::ncatt_put(nc_out_file, var_name, "grid_mapping", "crs")
+
+  # CRS attributes
+  ncdf4::ncatt_put(nc_out_file, "crs", "grid_mapping_name", "latitude_longitude")
+  ncdf4::ncatt_put(nc_out_file, "crs", "longitude_of_prime_meridian", 0.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "semi_major_axis", 6378137.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "inverse_flattening", 298.257223563)
+  ncdf4::ncatt_put(nc_out_file, "crs", "crs_wkt", 'GEOGCRS["WGS 84", ENSEMBLE["World Geodetic System 1984 ensemble",
+                 MEMBER["World Geodetic System 1984 (Transit)"],
+                 MEMBER["World Geodetic System 1984 (G730)"],
+                 MEMBER["World Geodetic System 1984 (G873)"],
+                 MEMBER["World Geodetic System 1984 (G1150)"],
+                 MEMBER["World Geodetic System 1984 (G1674)"],
+                 MEMBER["World Geodetic System 1984 (G1762)"],
+                 MEMBER["World Geodetic System 1984 (G2139)"],
+                 ELLIPSOID["WGS 84",6378137,298.257223563,
+                           LENGTHUNIT["metre",1]],
+                 ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+               ANGLEUNIT["degree",0.0174532925199433]],
+        CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+             ORDER[1],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+             ORDER[2],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        USAGE[
+          SCOPE["Horizontal component of 3D system."],
+          AREA["World."],
+          BBOX[-90,-180,90,180]],
+        ID["EPSG",4326]]')
 
   # Select signif function or pass
   if (missing(signif_digits)) {
