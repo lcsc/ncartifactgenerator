@@ -250,7 +250,7 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortio
   lonM <- mean(c(min(unlist(infoJs$lonMin)), max(unlist(infoJs$lonMax))))
   latM <- mean(c(min(unlist(infoJs$latMin)), max(unlist(infoJs$latMax))))
 
-  json$center <- list(lat = latM, lon = lonM)
+  json$center <- list(lat = latM, lng = lonM)
   json$times <- infoJs$times
   json$varMin <- infoJs$varmin
   json$varMax <- infoJs$varmax
