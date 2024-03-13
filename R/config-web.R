@@ -237,11 +237,12 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
 #' @param ncPortionSuffix A character vector specifying the portion suffixes for the variable (optional, default is c("_pen", "_can")).
 #' @param offsetType The type of offset (optional, default is "Q").
 #' @param sizeType The type of size (optional, default is "I").
+#' @param minify Whether the JSON string should be minified (optional, default is TRUE).
 #'
 #' @return The generated JSON string.
 #'
 #' @export
-writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionSuffix = c("_pen", "_can"), offsetType = "Q", sizeType = "I") {
+writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionSuffix = c("_pen", "_can"), offsetType = "Q", sizeType = "I", minify = TRUE) {
   file <- file.path(folder, "times.json")
 
   json <- list()
@@ -272,7 +273,7 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortio
   json$sizeType <- sizeType
   json$projection <- paste0("EPSG:", infoJs$epsg)
 
-  jsonString <- toJSON(json, auto_unbox = TRUE, pretty = FALSE)
+  jsonString <- toJSON(json, auto_unbox = TRUE, pretty = !minify)
 
   write(jsonString, file = file, append = FALSE)
   return(jsonString)

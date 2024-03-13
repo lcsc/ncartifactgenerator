@@ -11,7 +11,8 @@ writeJson(
   legendTitle = "Legend",
   ncPortionSuffix = c("_pen", "_can"),
   offsetType = "Q",
-  sizeType = "I"
+  sizeType = "I",
+  minify = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ writeJson(
 \item{offsetType}{The type of offset (optional, default is "Q").}
 
 \item{sizeType}{The type of size (optional, default is "I").}
+
+\item{minify}{Whether the JSON string should be minified (optional, default is TRUE).}
 }
 \value{
 The generated JSON string.
