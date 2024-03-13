@@ -326,8 +326,8 @@ generate_artifacts <- function(nc_root, out_root,
     print("  Skipped (already newer)")
   }
 
-  # times.js
-  print(" Step 5: times.js")
+  # times.json
+  print(" Step 5: times.json")
   nc <- nc_open(nc_file)
   dim_time <- dim(ncvar_get(nc, "time"))
   nc_close(nc)
