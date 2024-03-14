@@ -8,7 +8,7 @@ generate_artifacts(
   nc_root,
   out_root,
   nc_filename,
-  portion_suffix,
+  portion,
   var_id,
   epsg,
   info_js,
@@ -22,7 +22,7 @@ generate_artifacts(
 
 \item{nc_filename}{The name of the NetCDF file.}
 
-\item{portion_suffix}{The suffix to be added to the generated artifact files.}
+\item{portion}{The suffix to be added to the generated artifact files.}
 
 \item{var_id}{The variable ID.}
 

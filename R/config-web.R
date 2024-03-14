@@ -63,14 +63,14 @@ library(jsonlite)
 #' @return List with the generated web configuration.
 #'
 #' @export
-config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName, infoJs = NA, lon_name, lat_name, time_name = "time", portion_suffix) {
+config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName, infoJs = NA, lon_name, lat_name, time_name = "time", portion) {
   if (missing(infoJs) || sum(!is.na(infoJs)) == 0) {
     infoJs <- list(
       times = list(),
       latMin = list(), latMax = list(), latNum = list(),
       lonMin = list(), lonMax = list(), lonNum = list(),
-      timeMin = list(), timeMax = list(), timeNum = list(),
-      varType = "f", espg = epsg
+      varType = "f", espg = epsg,
+      portions = list()
     )
   }
 
@@ -113,12 +113,14 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   }
 
   coords <- read_coords(nc, epsg)
-  infoJs$lonMin[[paste0(varName, portion_suffix)]] <- min(coords[, 1])
-  infoJs$lonMax[[paste0(varName, portion_suffix)]] <- max(coords[, 1])
-  infoJs$lonNum[[paste0(varName, portion_suffix)]] <- length(unique(coords[, 1]))
-  infoJs$latMin[[paste0(varName, portion_suffix)]] <- min(coords[, 2])
-  infoJs$latMax[[paste0(varName, portion_suffix)]] <- max(coords[, 2])
-  infoJs$latNum[[paste0(varName, portion_suffix)]] <- length(unique(coords[, 2]))
+  infoJs$lonMin[[paste0(varName, portion)]] <- min(coords[, 1])
+  infoJs$lonMax[[paste0(varName, portion)]] <- max(coords[, 1])
+  infoJs$lonNum[[paste0(varName, portion)]] <- length(unique(coords[, 1]))
+  infoJs$latMin[[paste0(varName, portion)]] <- min(coords[, 2])
+  infoJs$latMax[[paste0(varName, portion)]] <- max(coords[, 2])
+  infoJs$latNum[[paste0(varName, portion)]] <- length(unique(coords[, 2]))
+
+  infoJs$portions[[varName]] <- c(infoJs$portions[[varName]], portion)
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)
 
@@ -177,14 +179,13 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
 #' @param infoJs A list containing the configuration data, including times, variable minimum and maximum values, latitude and longitude ranges, and EPSG code.
 #' @param varTitle The title of the variable.
 #' @param legendTitle The title of the legend (optional, default is "Legend").
-#' @param ncPortionSuffix A character vector specifying the portion suffixes for the variable (optional, default is c("_pen", "_can")).
 #' @param offsetType The type of offset (optional, default is "Q").
 #' @param sizeType The type of size (optional, default is "I").
 #'
 #' @return The generated JavaScript code as a character string.
 #'
 #' @export
-writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionSuffix = c("_pen", "_can"), offsetType = "Q", sizeType = "I") {
+writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetType = "Q", sizeType = "I", minify = TRUE) {
   file <- file.path(folder, "times.js")
 
   if (missing(varTitle)) {
@@ -209,7 +210,7 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
   } else {
     text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
   }
-  text.js <- paste(text.js, paste0("var ncPortionSuffix = ['", paste(ncPortionSuffix, collapse = "', '"), "'];\n"))
+  text.js <- paste(text.js, arrayRtojs(name = "portions", value = infoJs$portions, type = "character"))
   text.js <- paste(text.js, arrayRtojs(name = "lonMin", value = infoJs$lonMin, type = "numeric", value_array = FALSE))
   text.js <- paste(text.js, arrayRtojs(name = "lonMax", value = infoJs$lonMax, type = "numeric", value_array = FALSE))
   text.js <- paste(text.js, arrayRtojs(name = "lonNum", value = infoJs$lonNum, type = "numeric", value_array = FALSE))
@@ -221,7 +222,9 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
   text.js <- paste(text.js, paste0("var sizeType = '", sizeType, "';\n"))
   text.js <- paste(text.js, paste0("var projection = 'EPSG:", infoJs$epsg, "';\n"))
 
-  text.js <- uglify_optimize(text.js)
+  if (minify) {
+    text.js <- uglify_optimize(text.js)
+  }
 
   write(text.js, file = file, append = FALSE)
   return(text.js)
@@ -234,7 +237,6 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
 #' @param infoJs A list containing the configuration data, including times, variable minimum and maximum values, latitude and longitude ranges, and EPSG code.
 #' @param varTitle The title of the variable.
 #' @param legendTitle The title of the legend (optional, default is "Legend").
-#' @param ncPortionSuffix A character vector specifying the portion suffixes for the variable (optional, default is c("_pen", "_can")).
 #' @param offsetType The type of offset (optional, default is "Q").
 #' @param sizeType The type of size (optional, default is "I").
 #' @param minify Whether the JSON string should be minified (optional, default is TRUE).
@@ -242,7 +244,7 @@ writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionS
 #' @return The generated JSON string.
 #'
 #' @export
-writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortionSuffix = c("_pen", "_can"), offsetType = "Q", sizeType = "I", minify = TRUE) {
+writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetType = "Q", sizeType = "I", minify = TRUE) {
   file <- file.path(folder, "times.json")
 
   json <- list()
@@ -261,7 +263,7 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortio
   } else {
     json$legendTitle <- list("NaN" = list(legendTitle))
   }
-  json$ncPortionSuffix <- ncPortionSuffix
+  json$portions <- infoJs$portions
   json$lonMin <- infoJs$lonMin
   json$lonMax <- infoJs$lonMax
   json$lonNum <- infoJs$lonNum
@@ -273,7 +275,7 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", ncPortio
   json$sizeType <- sizeType
   json$projection <- paste0("EPSG:", infoJs$epsg)
 
-  jsonString <- toJSON(json, auto_unbox = TRUE, pretty = !minify)
+  jsonString <- toJSON(json, auto_unbox = FALSE, pretty = !minify)
 
   write(jsonString, file = file, append = FALSE)
   return(jsonString)

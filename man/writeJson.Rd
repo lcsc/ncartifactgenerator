@@ -9,7 +9,6 @@ writeJson(
   infoJs,
   varTitle,
   legendTitle = "Legend",
-  ncPortionSuffix = c("_pen", "_can"),
   offsetType = "Q",
   sizeType = "I",
   minify = TRUE
@@ -21,8 +20,6 @@ writeJson(
 \item{varTitle}{The title of the variable.}
 
 \item{legendTitle}{The title of the legend (optional, default is "Legend").}
-
-\item{ncPortionSuffix}{A character vector specifying the portion suffixes for the variable (optional, default is c("_pen", "_can")).}
 
 \item{offsetType}{The type of offset (optional, default is "Q").}
 

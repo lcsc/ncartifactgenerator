@@ -16,7 +16,7 @@ config_web(
   lon_name,
   lat_name,
   time_name = "time",
-  portion_suffix
+  portion
 )
 }
 \arguments{

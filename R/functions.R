@@ -260,7 +260,7 @@ get_struct_typecode <- function(nc_type) {
 #' @param nc_root The root directory of the NetCDF file.
 #' @param out_root The root directory where the artifacts will be generated.
 #' @param nc_filename The name of the NetCDF file.
-#' @param portion_suffix The suffix to be added to the generated artifact files.
+#' @param portion The suffix to be added to the generated artifact files.
 #' @param var_id The variable ID.
 #' @param epsg The EPSG code.
 #' @param info_js The information for the JavaScript configuration.
@@ -270,7 +270,7 @@ get_struct_typecode <- function(nc_type) {
 #'
 #' @export
 generate_artifacts <- function(nc_root, out_root,
-                               nc_filename, portion_suffix, var_id,
+                               nc_filename, portion, var_id,
                                epsg, info_js, write = FALSE) {
   print(paste0("var_id: ", var_id))
 
@@ -278,8 +278,8 @@ generate_artifacts <- function(nc_root, out_root,
   var_nc_out_folder <- file.path(out_root, "nc")
 
   dir.create(var_nc_out_folder, showWarnings = FALSE, recursive = TRUE)
-  t_nc_filename <- paste0(var_id, portion_suffix, "-t", ".nc")
-  nc_file <- file.path(nc_root, paste0(nc_filename, portion_suffix, ".nc"))
+  t_nc_filename <- paste0(var_id, portion, "-t", ".nc")
+  nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
   t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
   infoNc <- file.info(nc_file)
 
@@ -294,7 +294,7 @@ generate_artifacts <- function(nc_root, out_root,
   }
   # BIN t chunks directory
   print(" Step 2: Bin_t")
-  t_bin_filename <- paste0(var_id, portion_suffix, "-t", ".bin")
+  t_bin_filename <- paste0(var_id, portion, "-t", ".bin")
   t_bin_file <- file.path(var_nc_out_folder, t_bin_filename)
   infoT <- file.info(t_bin_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
@@ -305,7 +305,7 @@ generate_artifacts <- function(nc_root, out_root,
 
   # NC xy chunks
   print(" Step 3: Chunk_xy")
-  xy_nc_filename <- paste0(var_id, portion_suffix, "-xy", ".nc")
+  xy_nc_filename <- paste0(var_id, portion, "-xy", ".nc")
   xy_nc_file <- file.path(var_nc_out_folder, xy_nc_filename)
   time_by <- 100
   infoT <- file.info(xy_nc_file)
@@ -317,7 +317,7 @@ generate_artifacts <- function(nc_root, out_root,
 
   # BIN xy chunks directory
   print(" Step 4: Bin_xy")
-  xy_bin_filename <- paste0(var_id, portion_suffix, "-xy", ".bin")
+  xy_bin_filename <- paste0(var_id, portion, "-xy", ".bin")
   xy_bin_file <- file.path(var_nc_out_folder, xy_bin_filename)
   infoT <- file.info(xy_bin_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
@@ -337,7 +337,7 @@ generate_artifacts <- function(nc_root, out_root,
     epsg = epsg,
     varName = var_id,
     infoJs = info_js,
-    portion_suffix = portion_suffix,
+    portion = portion,
     varmax = -1,
     varmin = -1
   )
