@@ -120,7 +120,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   infoJs$latMax[[paste0(varName, portion)]] <- max(coords[, 2])
   infoJs$latNum[[paste0(varName, portion)]] <- length(unique(coords[, 2]))
 
-  infoJs$portions[[varName]] <- c(infoJs$portions[[varName]], portion)
+  infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)
 
@@ -275,7 +275,7 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetTy
   json$sizeType <- sizeType
   json$projection <- paste0("EPSG:", infoJs$epsg)
 
-  jsonString <- toJSON(json, auto_unbox = FALSE, pretty = !minify)
+  jsonString <- toJSON(json, auto_unbox = TRUE, pretty = !minify)
 
   write(jsonString, file = file, append = FALSE)
   return(jsonString)
