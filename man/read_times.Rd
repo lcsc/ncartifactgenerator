@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions.R
 \name{read_times}
 \alias{read_times}
-\title{read times}
+\title{read_times Function}
 \usage{
 read_times(nc, formatdates)
 }
 \arguments{
-\item{nc}{nc}
+\item{nc}{The NetCDF file object.}
 
-\item{formatdates}{formatdates}
+\item{formatdates}{Optional parameter to specify the format of the output dates.}
 }
 \value{
-times
+A vector of Date objects representing the time values.
 }
 \description{
-read times
+This function reads the time values from a NetCDF file and converts them to Date objects.
 }

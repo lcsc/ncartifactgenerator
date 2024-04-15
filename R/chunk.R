@@ -1,8 +1,10 @@
 #' @name Chunk
 #' @author
-#' Borja Latorre Garcés \url{http://eead.csic.es/home/staffinfo?Id=215}; Soil and Water, EEAD, CSIC \url{http://www.eead.csic.es}
-#' Fergus Reig Gracia \url{http://fergusreig.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{http://www.ipe.csic.es/hidrologia-ambiental}
-#' Eduardo Moreno Lamana \url{https://apuntes.eduardofilo.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{http://www.ipe.csic.es/hidrologia-ambiental}
+#' Borja Latorre-Garcés \url{https://www.eead.csic.es/home/staffinfo?Id=215}; Soil and Water, EEAD, CSIC \url{https://www.eead.csic.es}
+#' Fergus Reig-Gracia \url{http://fergusreig.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{https://www.ipe.csic.es/hidrologia-ambiental}
+#' Eduardo Moreno-Lamana \url{https://apuntes.eduardofilo.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{https://www.ipe.csic.es/hidrologia-ambiental}
+#' Daniel Vilas-Perulán \url{https://www.eead.csic.es/home/staffinfo?Id=754}; Soil and Water, EEAD, CSIC \url{https://www.eead.csic.es}
+#' Manuel Arretxea-Iriarte; Physics of climate and climate change, IGEO, CSIC \url{https://igeo.ucm-csic.es/}
 #' @title Chunk functions
 #' @details
 #' \tabular{ll}{
@@ -122,8 +124,52 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
   }
   var <- do.call(ncvar_def, args)
 
+  # Define the CRS variable
+  varCRS <- ncdf4::ncvar_def(
+    name = "crs",
+    units = "",
+    dim = list(),
+    longname = "CRS definition",
+    prec = "integer"
+  )
+
   # Final file creation
-  nc_out_file <- nc_create(out_file, list(var), force_v4 = TRUE)
+  nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
+
+  # Link the variable to the projection variable using the
+  # grid_mapping attribute
+  ncdf4::ncatt_put(nc_out_file, var_name, "grid_mapping", "crs")
+
+  # CRS attributes
+  ncdf4::ncatt_put(nc_out_file, "crs", "grid_mapping_name", "latitude_longitude")
+  ncdf4::ncatt_put(nc_out_file, "crs", "longitude_of_prime_meridian", 0.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "semi_major_axis", 6378137.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "inverse_flattening", 298.257223563)
+  ncdf4::ncatt_put(nc_out_file, "crs", "crs_wkt", 'GEOGCRS["WGS 84", ENSEMBLE["World Geodetic System 1984 ensemble",
+                 MEMBER["World Geodetic System 1984 (Transit)"],
+                 MEMBER["World Geodetic System 1984 (G730)"],
+                 MEMBER["World Geodetic System 1984 (G873)"],
+                 MEMBER["World Geodetic System 1984 (G1150)"],
+                 MEMBER["World Geodetic System 1984 (G1674)"],
+                 MEMBER["World Geodetic System 1984 (G1762)"],
+                 MEMBER["World Geodetic System 1984 (G2139)"],
+                 ELLIPSOID["WGS 84",6378137,298.257223563,
+                           LENGTHUNIT["metre",1]],
+                 ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+               ANGLEUNIT["degree",0.0174532925199433]],
+        CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+             ORDER[1],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+             ORDER[2],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        USAGE[
+          SCOPE["Horizontal component of 3D system."],
+          AREA["World."],
+          BBOX[-90,-180,90,180]],
+        ID["EPSG",4326]]')
 
   # Select signif function or pass
   if (missing(signif_digits)) {
@@ -261,8 +307,52 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name = "lon",
   }
   var <- do.call(ncvar_def, args)
 
+  # Define the CRS variable
+  varCRS <- ncdf4::ncvar_def(
+    name = "crs",
+    units = "",
+    dim = list(),
+    longname = "CRS definition",
+    prec = "integer"
+  )
+
   # Final file creation
-  nc_out_file <- nc_create(out_file, list(var), force_v4 = TRUE)
+  nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
+
+  # Link the variable to the projection variable using the
+  # grid_mapping attribute
+  ncdf4::ncatt_put(nc_out_file, var_name, "grid_mapping", "crs")
+
+  # CRS attributes
+  ncdf4::ncatt_put(nc_out_file, "crs", "grid_mapping_name", "latitude_longitude")
+  ncdf4::ncatt_put(nc_out_file, "crs", "longitude_of_prime_meridian", 0.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "semi_major_axis", 6378137.0)
+  ncdf4::ncatt_put(nc_out_file, "crs", "inverse_flattening", 298.257223563)
+  ncdf4::ncatt_put(nc_out_file, "crs", "crs_wkt", 'GEOGCRS["WGS 84", ENSEMBLE["World Geodetic System 1984 ensemble",
+                 MEMBER["World Geodetic System 1984 (Transit)"],
+                 MEMBER["World Geodetic System 1984 (G730)"],
+                 MEMBER["World Geodetic System 1984 (G873)"],
+                 MEMBER["World Geodetic System 1984 (G1150)"],
+                 MEMBER["World Geodetic System 1984 (G1674)"],
+                 MEMBER["World Geodetic System 1984 (G1762)"],
+                 MEMBER["World Geodetic System 1984 (G2139)"],
+                 ELLIPSOID["WGS 84",6378137,298.257223563,
+                           LENGTHUNIT["metre",1]],
+                 ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+               ANGLEUNIT["degree",0.0174532925199433]],
+        CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+             ORDER[1],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+             ORDER[2],
+             ANGLEUNIT["degree",0.0174532925199433]],
+        USAGE[
+          SCOPE["Horizontal component of 3D system."],
+          AREA["World."],
+          BBOX[-90,-180,90,180]],
+        ID["EPSG",4326]]')
 
   # Select signif function or pass
   if (missing(signif_digits)) {
@@ -334,74 +424,6 @@ create_nc_name <- function(file_name, sufix = "-t", ext = "") {
     ext <- substr(file_name, ext_pos, nchar(file_name))
   }
   return(paste0(substr(file_name, 1, ext_pos - 1), sufix, ext))
-}
-
-
-#' Converts the data type of a variable or dimension of a netCDF to the data type codes used
-#' by the struct library.
-#' @param nc_type netCDF data type
-#' @return struct data type
-#' @examples
-#' get_struct_typecode(nc_type = "double")
-get_struct_typecode <- function(nc_type) {
-  result <- switch(nc_type,
-    "float" = "f",
-    "double" = "d",
-    "int" = "i"
-  )
-  return(result)
-}
-
-
-#' Create the JSON ncEnv with meta-information about the netCDF file.
-#' @param in_file Original netCDF file
-#' @param out_file JSON file
-#' @param lon_name Name of longitude dimension.
-#' @param lat_name Name of latitude dimension.
-#' @export
-#' @examples
-#' write_nc_env(in_file = "/path/ETo.nc", out_file = "/path/ncEnv.js", lon_name = "lon", lat_name = "lat")
-write_nc_env <- function(in_file, out_file, lon_name = "lon", lat_name = "lat") {
-  # Open the original netCDF file
-  nc_in_file <- nc_open(in_file)
-
-  write("var ncEnv = {", out_file)
-  var_name <- getVarName(nc_in_file)
-  write(paste0("    \"var_name\": \"", var_name, "\","), out_file, append = TRUE)
-  lon_data <- ncvar_get(nc_in_file, lon_name)
-  lon_min <- lon_data[1]
-  write(paste0("    \"lon_min\": ", lon_min, ","), out_file, append = TRUE)
-  lon_max <- lon_data[length(lon_data)]
-  write(paste0("    \"lon_max\": ", lon_max, ","), out_file, append = TRUE)
-  lon_num <- length(lon_data)
-  write(paste0("    \"lon_num\": ", lon_num, ","), out_file, append = TRUE)
-  lat_data <- ncvar_get(nc_in_file, lat_name)
-  lat_min <- lat_data[1]
-  write(paste0("    \"lat_min\": ", lat_min, ","), out_file, append = TRUE)
-  lat_max <- lat_data[length(lat_data)]
-  write(paste0("    \"lat_max\": ", lat_max, ","), out_file, append = TRUE)
-  lat_num <- length(lat_data)
-  write(paste0("    \"lat_num\": ", lat_num, ","), out_file, append = TRUE)
-  time_data <- ncvar_get(nc_in_file, "time")
-  time_min <- time_data[1]
-  write(paste0("    \"time_min\": ", time_min, ","), out_file, append = TRUE)
-  time_max <- time_data[length(time_data)]
-  write(paste0("    \"time_max\": ", time_max, ","), out_file, append = TRUE)
-  time_num <- length(time_data)
-  write(paste0("    \"time_num\": ", time_num, ","), out_file, append = TRUE)
-  var_type <- get_struct_typecode(nc_in_file$var[[var_name]]$prec)
-  write(paste0("    \"var_type\": \"", var_type, "\","), out_file, append = TRUE)
-  compressed <- if (is.na(nc_in_file$var[[var_name]]$compression)) "false" else "true"
-  write(paste0("    \"compressed\": ", compressed, ","), out_file, append = TRUE)
-  offset_type <- "Q"
-  write(paste0("    \"offset_type\": \"", offset_type, "\","), out_file, append = TRUE)
-  size_type <- "I"
-  write(paste0("    \"size_type\": \"", size_type, "\","), out_file, append = TRUE)
-  projection <- "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs"
-  write(paste0("    \"projection\": \"", projection, "\""), out_file, append = TRUE)
-  write("}", out_file, append = TRUE)
-
-  nc_close(nc_in_file)
 }
 
 

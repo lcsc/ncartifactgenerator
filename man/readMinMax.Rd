@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions.R
 \name{readMinMax}
 \alias{readMinMax}
-\title{read min max}
+\title{readMinMax Function}
 \usage{
 readMinMax(nc)
 }
 \arguments{
-\item{nc}{nc}
+\item{nc}{The NetCDF file object.}
 }
 \value{
-day min max
+A list containing the minimum and maximum values of the variable.
 }
 \description{
-read min max
+This function reads the minimum and maximum values of a variable from a NetCDF file.
 }

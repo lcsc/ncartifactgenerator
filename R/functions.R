@@ -1,7 +1,10 @@
 #' @name Functions
 #' @author
-#' Borja Latorre Garcés \url{http://eead.csic.es/home/staffinfo?Id=215}; Soil and Water, EEAD, CSIC \url{http://www.eead.csic.es}
-#' Fergus Reig Gracia \url{http://fergusreig.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{http://www.ipe.csic.es/hidrologia-ambiental}
+#' Borja Latorre-Garcés \url{https://www.eead.csic.es/home/staffinfo?Id=215}; Soil and Water, EEAD, CSIC \url{https://www.eead.csic.es}
+#' Fergus Reig-Gracia \url{http://fergusreig.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{https://www.ipe.csic.es/hidrologia-ambiental}
+#' Eduardo Moreno-Lamana \url{https://apuntes.eduardofilo.es}; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC \url{https://www.ipe.csic.es/hidrologia-ambiental}
+#' Daniel Vilas-Perulán \url{https://www.eead.csic.es/home/staffinfo?Id=754}; Soil and Water, EEAD, CSIC \url{https://www.eead.csic.es}
+#' Manuel Arretxea-Iriarte; Physics of climate and climate change, IGEO, CSIC \url{https://igeo.ucm-csic.es/}
 #' @title Auxiliary functions
 #' @details
 #' \tabular{ll}{
@@ -31,9 +34,14 @@
 
 library(ncdf4)
 
-#' read epsg
-#' @param nc nc
-#' @return epsg
+
+#' Read EPSG code from NetCDF file
+#'
+#' This function reads the EPSG code from a NetCDF file.
+#'
+#' @param nc The NetCDF file object.
+#'
+#' @return The EPSG code as a numeric value.
 read_epsg <- function(nc) {
   epsg <- 0
 
@@ -47,39 +55,19 @@ read_epsg <- function(nc) {
   return(epsg)
 }
 
-#' raster 3857
-#' @param nc nc
-#' @return project Raster
-raster_3857 <- function(nc, epsg) {
-  # read spatial dims
-  dimNames <- returnXYNames(nc)
-  nrow <- nc$dim[[dimNames$Y]]$len
-  ncol <- nc$dim[[dimNames$X]]$len
-  lon <- nc$dim[[dimNames$X]]$vals
-  if (lon[1] > lon[length(lon)]) {
-    lon <- rev(lon)
-  }
-  lat <- nc$dim[[dimNames$Y]]$vals
-  if (lat[1] > lat[length(lat)]) {
-    lat <- rev(lat)
-  }
-  dx <- lon[2] - lon[1]
-  dy <- lat[2] - lat[1]
 
-  # create empty raster
-  data <- array(numeric(), c(nrow, ncol))
-  r <- raster(data[c(nrow:1), ])
-  extent(r) <- c(lon[1] - dx / 2, rev(lon)[1] + dx / 2, lat[1] - dy / 2, rev(lat)[1] + dy / 2)
-  crs(r) <- crs(paste0("+init=epsg:", epsg))
-
-  # warp to mercator
-  r.crs <- projectRaster(from = r, method = "ngb", crs = CRS(paste0("+init=epsg:", "3857")))
-  return(r.crs)
-}
-
-#' read dims names
-#' @param nc nc
-#' @return list Y X
+#' Return the names of the X and Y dimensions in a NetCDF object
+#'
+#' This function takes a NetCDF object as input and returns the names of the X and Y dimensions.
+#' If the dimensions are named "Y" and "X", the function will return these names along with their positions.
+#' If the dimensions are named "latitude" and "longitude", the function will return "latitude" as the Y dimension name,
+#' "longitude" as the X dimension name, and their positions.
+#' If the dimensions are named "lat" and "lon", the function will return "lat" as the Y dimension name,
+#' "lon" as the X dimension name, and their positions.
+#'
+#' @param nc A NetCDF object.
+#'
+#' @return A list containing the names and positions of the X and Y dimensions.
 returnXYNames <- function(nc) {
   dim <- array(NA, dim = nc$ndims)
   for (i in 1:nc$ndims) {
@@ -98,10 +86,15 @@ returnXYNames <- function(nc) {
   }
 }
 
-#' read times
-#' @param nc nc
-#' @param formatdates formatdates
-#' @return times
+
+#' read_times Function
+#'
+#' This function reads the time values from a NetCDF file and converts them to Date objects.
+#'
+#' @param nc The NetCDF file object.
+#' @param formatdates Optional parameter to specify the format of the output dates.
+#'
+#' @return A vector of Date objects representing the time values.
 read_times <- function(nc, formatdates) {
   times <- nc$dim[[timePosition(nc)]]$vals
   units <- strsplit(nc$dim[[timePosition(nc)]]$units, " ")[[1]]
@@ -115,19 +108,16 @@ read_times <- function(nc, formatdates) {
   return(times)
 }
 
-#' read max zoom
-#' @param r.crs r.crs
-#' @return max zoom
-readMaxZoom <- function(r.crs) {
-  pixelSize <- min(res(r.crs)) # /1000
-  maxzoom <- as.integer(log((20037508.343 * 2) / (256 * pixelSize)) / log(2) + 0.4999)
-  return(maxzoom)
-}
 
-#' read coords
-#' @param nc nc
-#' @param epsg epsg
-#' @return coords
+#' Read coordinates from a NetCDF file
+#'
+#' This function reads the longitude and latitude coordinates from a NetCDF file
+#' and returns them as a data frame.
+#'
+#' @param nc The NetCDF file object.
+#' @param epsg The EPSG code specifying the coordinate reference system (CRS).
+#'
+#' @return A data frame containing the longitude and latitude coordinates.
 read_coords <- function(nc, epsg) {
   # read spatial dims
   dimNames <- returnXYNames(nc)
@@ -149,57 +139,51 @@ read_coords <- function(nc, epsg) {
   return(coords)
 }
 
-#' read min max
-#' @param nc nc
-#' @return day min max
+
+#' readMinMax Function
+#'
+#' This function reads the minimum and maximum values of a variable from a NetCDF file.
+#'
+#' @param nc The NetCDF file object.
+#'
+#' @return A list containing the minimum and maximum values of the variable.
 readMinMax <- function(nc) {
   var_name <- getVarName(nc)
   data <- ncvar_get(nc, nc$var[[var_name]]$name)
-  minMax <- list(min = apply(data, 3, min, na.rm = TRUE), max = apply(data, 3, max, na.rm = TRUE))
-  minMax$min[is.na(minMax$min)] <- 0
-  minMax$max[is.na(minMax$max)] <- 0
+  minMax <- suppressWarnings(list(minimum = apply(data, 3, min, na.rm = TRUE), maximum = apply(data, 3, max, na.rm = TRUE)))
+  minMax$minimum[is.na(minMax$min)] <- 0
+  minMax$maximum[is.na(minMax$max)] <- 0
   return(minMax)
 }
 
-#' merge min arrays
-#' @param min1 min1
-#' @param min2 min2
+
+#' merge arrays using aggregation function
+#' @param arr1 array 1
+#' @param arr2 array 2
 #' @param positions positions
-#' @return min
-minFusion <- function(min1, min2, positions) {
-  if (length(min1) < length(min2)) {
-    min.new <- min2
+#' @param aggregation_func aggregation function to use (e.g., min, max, sum)
+#' @return merged array
+mergeArrays <- function(arr1, arr2, positions, aggregation_func) {
+  if (length(arr1) < length(arr2)) {
+    merged_arr <- arr2
   } else {
-    min.new <- min1
+    merged_arr <- arr1
   }
   i <- 1
   for (i in positions) {
-    min.new[i] <- min(min1[i], min2[i], na.rm = TRUE)
+    merged_arr[i] <- aggregation_func(arr1[i], arr2[i], na.rm = TRUE)
   }
-  return(min.new)
+  return(merged_arr)
 }
 
-#' merge max arrays
-#' @param max1 max1
-#' @param max2 max2
-#' @param positions positions
-#' @return max
-maxFusion <- function(max1, max2, positions) {
-  if (length(max1) < length(max2)) {
-    max.new <- max2
-  } else {
-    max.new <- max1
-  }
-  i <- 1
-  for (i in positions) {
-    max.new[i] <- max(max1[i], max2[i], na.rm = TRUE)
-  }
-  return(max.new)
-}
 
-#' dim time position
-#' @param nc open nc file
-#' @return max
+#' timePosition
+#'
+#' This function returns the position of the "time" dimension in a netCDF object.
+#'
+#' @param nc A netCDF object.
+#'
+#' @return The position of the "time" dimension.
 timePosition <- function(nc) {
   return(grep("time", tolower(names(nc$dim))))
 }
@@ -207,10 +191,159 @@ timePosition <- function(nc) {
 
 #' Get var name of main variable in nc file
 #' @param nc open nc file
+#'
 #' @return var name
-#' @export
 getVarName <- function(nc) {
   var_names <- names(nc$var)
   var_name <- var_names[!var_names %in% c("crs")][1]
   return(var_name)
+}
+
+
+#' Convert R array to JavaScript object
+#'
+#' This function converts an R array into a JavaScript object. It supports different data types such as character, date, and numeric.
+#'
+#' @param name The name of the JavaScript object.
+#' @param value The R array to be converted.
+#' @param type The data type of the values in the R array. Default is "character".
+#' @param digits The number of digits to round the numeric values. Default is 3.
+#' @param value_array Logical value indicating whether the values should be converted into an array in JavaScript. Default is TRUE.
+#'
+#' @return A string representing the JavaScript object.
+arrayRtojs <- function(name, value, type = "character", digits = 3, value_array = TRUE) {
+  times <- ""
+  for (t in names(value)) {
+    if (times != "") {
+      times <- paste0(times, ", ")
+    }
+    if (type == "character") {
+      sep <- "'"
+      values <- value[[t]]
+    } else if (type == "date") {
+      sep <- "'"
+      values <- as.Date(value[[t]])
+    } else {
+      sep <- ""
+      values <- round(value[[t]], digits = digits)
+    }
+    if (value_array) {
+      times <- paste0(times, "'", t, "': [", sep, paste(values, collapse = paste0(sep, ",", sep)), sep, "]")
+    } else {
+      times <- paste0(times, "'", t, "': ", sep, values[1], sep)
+    }
+  }
+  times.write <- paste0("var ", name, " = {", times, "};\n")
+  return(times.write)
+}
+
+
+#' Converts the data type of a variable or dimension of a netCDF to the data type codes used
+#' by the struct library.
+#' @param nc_type netCDF data type
+#'
+#' @return struct data type
+get_struct_typecode <- function(nc_type) {
+  result <- switch(nc_type,
+    "float" = "f",
+    "double" = "d",
+    "int" = "i"
+  )
+  return(result)
+}
+
+
+#' Generate artifacts from NetCDF file
+#'
+#' This function generates artifacts from a NetCDF file, including chunked NetCDF files and corresponding binary files.
+#'
+#' @param nc_root The root directory of the NetCDF file.
+#' @param out_root The root directory where the artifacts will be generated.
+#' @param nc_filename The name of the NetCDF file.
+#' @param portion The suffix to be added to the generated artifact files.
+#' @param var_id The variable ID.
+#' @param epsg The EPSG code.
+#' @param info_js The information for the JavaScript configuration.
+#' @param write A logical value indicating whether to write the artifacts to disk. Default is FALSE.
+#'
+#' @return The information for the JavaScript configuration.
+#'
+#' @export
+generate_artifacts <- function(nc_root, out_root,
+                               nc_filename, portion, var_id,
+                               epsg, info_js, write = FALSE) {
+  print(paste0("var_id: ", var_id))
+
+  # NC t chunks
+  var_nc_out_folder <- file.path(out_root, "nc")
+
+  dir.create(var_nc_out_folder, showWarnings = FALSE, recursive = TRUE)
+  t_nc_filename <- paste0(var_id, portion, "-t", ".nc")
+  nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
+  t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
+  infoNc <- file.info(nc_file)
+
+  print(" Step 1: Chunk_t")
+  lon_by <- 100
+  lat_by <- 100
+  infoT <- file.info(t_nc_file)
+  if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
+    write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by)
+  } else {
+    print("  Skipped (already newer)")
+  }
+  # BIN t chunks directory
+  print(" Step 2: Bin_t")
+  t_bin_filename <- paste0(var_id, portion, "-t", ".bin")
+  t_bin_file <- file.path(var_nc_out_folder, t_bin_filename)
+  infoT <- file.info(t_bin_file)
+  if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
+    write_nc_t_chunk_dir_iter(in_file = t_nc_file, out_file = t_bin_file)
+  } else {
+    print("  Skipped (already newer)")
+  }
+
+  # NC xy chunks
+  print(" Step 3: Chunk_xy")
+  xy_nc_filename <- paste0(var_id, portion, "-xy", ".nc")
+  xy_nc_file <- file.path(var_nc_out_folder, xy_nc_filename)
+  time_by <- 100
+  infoT <- file.info(xy_nc_file)
+  if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
+    write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by)
+  } else {
+    print("  Skipped (already newer)")
+  }
+
+  # BIN xy chunks directory
+  print(" Step 4: Bin_xy")
+  xy_bin_filename <- paste0(var_id, portion, "-xy", ".bin")
+  xy_bin_file <- file.path(var_nc_out_folder, xy_bin_filename)
+  infoT <- file.info(xy_bin_file)
+  if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
+    write_nc_xy_chunk_dir_iter(in_file = xy_nc_file, out_file = xy_bin_file)
+  } else {
+    print("  Skipped (already newer)")
+  }
+
+  # times.json
+  print(" Step 5: times.json")
+  nc <- nc_open(nc_file)
+  dim_time <- dim(ncvar_get(nc, "time"))
+  nc_close(nc)
+  args <- list(
+    file = nc_file,
+    folder = out_root,
+    epsg = epsg,
+    varName = var_id,
+    infoJs = info_js,
+    portion = portion,
+    varmax = -1,
+    varmin = -1
+  )
+  if (!missing(epsg)) {
+    args$epsg <- epsg
+  }
+  info_js <- do.call(config_web, args)
+  return(info_js)
 }
