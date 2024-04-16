@@ -114,7 +114,8 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
   )
   args <- list(
     name = var_name, units = var_units, dim = list(lon, lat, time),
-    chunksizes = c(1, 1, time_num), compression = 9
+    chunksizes = c(1, 1, time_num), compression = 9,
+    prec = nc_in_file$var[[var_name]]$prec
   )
   if (!is.null(var_longname)) {
     args$longname <- var_longname
@@ -297,7 +298,8 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name = "lon",
   )
   args <- list(
     name = var_name, units = var_units, dim = list(lon, lat, time),
-    chunksizes = c(lon_num, lat_num, 1), compression = 9
+    chunksizes = c(lon_num, lat_num, 1), compression = 9,
+    prec = nc_in_file$var[[var_name]]$prec
   )
   if (!is.null(var_longname)) {
     args$longname <- var_longname
