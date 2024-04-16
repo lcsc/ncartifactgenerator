@@ -675,7 +675,7 @@ fusion_pen_can <- function(can_filename,
   args <- list(
     name = var_name, units = var_units, dim = list(dimLon, dimLat, dimTime),
     chunksizes = c(chunk_lon, chunk_lat, chunk_time),
-    prec = "float", compression = 9
+    prec = can$var[[var_name]]$prec, compression = 9
   )
   if (!is.null(var_longname)) {
     args$longname <- var_longname
