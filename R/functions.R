@@ -291,7 +291,7 @@ generate_artifacts <- function(nc_root, out_root,
   lat_by <- 100
   infoT <- file.info(t_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
-    write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by)
+    write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by, lon_name = lon_name, lat_name = lat_name)
   } else {
     print("  Skipped (already newer)")
   }
@@ -313,7 +313,7 @@ generate_artifacts <- function(nc_root, out_root,
   time_by <- 100
   infoT <- file.info(xy_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
-    write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by)
+    write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by, lon_name = lon_name, lat_name = lat_name)
   } else {
     print("  Skipped (already newer)")
   }
