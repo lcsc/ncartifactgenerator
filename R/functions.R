@@ -264,6 +264,8 @@ get_struct_typecode <- function(nc_type) {
 #' @param var_id The variable ID.
 #' @param epsg The EPSG code.
 #' @param info_js The information for the JavaScript configuration.
+#' @param lon_name The name of the longitude dimension.
+#' @param lat_name The name of the latitude dimension.
 #' @param write A logical value indicating whether to write the artifacts to disk. Default is FALSE.
 #'
 #' @return The information for the JavaScript configuration.
@@ -271,7 +273,8 @@ get_struct_typecode <- function(nc_type) {
 #' @export
 generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
-                               epsg, info_js, write = FALSE) {
+                               epsg, info_js, lon_name = NA, lat_name = NA,
+                               write = FALSE) {
   print(paste0("var_id: ", var_id))
 
   # NC t chunks
@@ -337,6 +340,8 @@ generate_artifacts <- function(nc_root, out_root,
     epsg = epsg,
     varName = var_id,
     infoJs = info_js,
+    lon_name = lon_name,
+    lat_name = lat_name,
     portion = portion,
     varmax = -1,
     varmin = -1

@@ -12,6 +12,8 @@ generate_artifacts(
   var_id,
   epsg,
   info_js,
+  lon_name = NA,
+  lat_name = NA,
   write = FALSE
 )
 }
@@ -29,6 +31,10 @@ generate_artifacts(
 \item{epsg}{The EPSG code.}
 
 \item{info_js}{The information for the JavaScript configuration.}
+
+\item{lon_name}{The name of the longitude dimension.}
+
+\item{lat_name}{The name of the latitude dimension.}
 
 \item{write}{A logical value indicating whether to write the artifacts to disk. Default is FALSE.}
 }
