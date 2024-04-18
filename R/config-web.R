@@ -112,13 +112,15 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     lat_name <- dimNames$Y
   }
 
-  coords <- read_coords(nc, epsg)
-  infoJs$lonMin[[paste0(varName, portion)]] <- min(coords[, 1])
-  infoJs$lonMax[[paste0(varName, portion)]] <- max(coords[, 1])
-  infoJs$lonNum[[paste0(varName, portion)]] <- length(unique(coords[, 1]))
-  infoJs$latMin[[paste0(varName, portion)]] <- min(coords[, 2])
-  infoJs$latMax[[paste0(varName, portion)]] <- max(coords[, 2])
-  infoJs$latNum[[paste0(varName, portion)]] <- length(unique(coords[, 2]))
+  # Calculates the minimum and maximum of the netCDF dimensions corresponding to the spatial coordinates
+  lon <- nc$dim[[lon_name]]$vals
+  lat <- nc$dim[[lat_name]]$vals
+  infoJs$lonMin[[paste0(varName, portion)]] <- min(lon)
+  infoJs$lonMax[[paste0(varName, portion)]] <- max(lon)
+  infoJs$lonNum[[paste0(varName, portion)]] <- length(lon)
+  infoJs$latMin[[paste0(varName, portion)]] <- min(lat)
+  infoJs$latMax[[paste0(varName, portion)]] <- max(lat)
+  infoJs$latNum[[paste0(varName, portion)]] <- length(lat)
 
   infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
