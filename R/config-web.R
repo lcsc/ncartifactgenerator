@@ -173,65 +173,6 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
 }
 
 
-#' Write JavaScript file with configuration data
-#'
-#' This function writes a JavaScript file with configuration data for VisorServiciosClimaticos.
-#'
-#' @param folder The folder where the JavaScript file will be saved.
-#' @param infoJs A list containing the configuration data, including times, variable minimum and maximum values, latitude and longitude ranges, and EPSG code.
-#' @param varTitle The title of the variable.
-#' @param legendTitle The title of the legend (optional, default is "Legend").
-#' @param offsetType The type of offset (optional, default is "Q").
-#' @param sizeType The type of size (optional, default is "I").
-#'
-#' @return The generated JavaScript code as a character string.
-#'
-#' @export
-writeJs <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetType = "Q", sizeType = "I", minify = TRUE) {
-  file <- file.path(folder, "times.js")
-
-  if (missing(varTitle)) {
-    if (length(infoJs$varmin) > 1) {
-      varTitle <- names(infoJs$varmin)
-      names(varTitle) <- names(infoJs$varmin)
-    } else {
-      varTitle <- names(infoJs$varmin)
-    }
-  }
-
-  text.js <- ""
-
-  text.js <- paste(text.js, paste0("var center = {'lat': ", infoJs$latM, ", 'lng': ", infoJs$lonM, "};\n"))
-
-  text.js <- paste(text.js, arrayRtojs(name = "times", value = infoJs$times, type = "date"))
-  text.js <- paste(text.js, arrayRtojs(name = "varMin", value = infoJs$varmin, type = "numeric"))
-  text.js <- paste(text.js, arrayRtojs(name = "varMax", value = infoJs$varmax, type = "numeric"))
-  text.js <- paste(text.js, arrayRtojs(name = "varTitle", value = varTitle))
-  if (length(legendTitle) > 1) {
-    text.js <- paste(text.js, arrayRtojs(name = "legendTitle", value = legendTitle))
-  } else {
-    text.js <- paste(text.js, paste0("var legendTitle = {NaN:['", legendTitle, "']};\n"))
-  }
-  text.js <- paste(text.js, arrayRtojs(name = "portions", value = infoJs$portions, type = "character"))
-  text.js <- paste(text.js, arrayRtojs(name = "lonMin", value = infoJs$lonMin, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, arrayRtojs(name = "lonMax", value = infoJs$lonMax, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, arrayRtojs(name = "lonNum", value = infoJs$lonNum, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, arrayRtojs(name = "latMin", value = infoJs$latMin, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, arrayRtojs(name = "latMax", value = infoJs$latMax, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, arrayRtojs(name = "latNum", value = infoJs$latNum, type = "numeric", value_array = FALSE))
-  text.js <- paste(text.js, paste0("var varType = '", infoJs$varType, "';\n"))
-  text.js <- paste(text.js, paste0("var offsetType = '", offsetType, "';\n"))
-  text.js <- paste(text.js, paste0("var sizeType = '", sizeType, "';\n"))
-  text.js <- paste(text.js, paste0("var projection = 'EPSG:", infoJs$epsg, "';\n"))
-
-  if (minify) {
-    text.js <- uglify_optimize(text.js)
-  }
-
-  write(text.js, file = file, append = FALSE)
-  return(text.js)
-}
-
 #' Write JSON string with configuration data
 #'
 #' This function generates a JSON string with configuration data similar to the JavaScript variables in writeJs.
@@ -254,8 +195,14 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetTy
   # Center of all the maps
   lonM <- mean(c(min(unlist(infoJs$lonMin)), max(unlist(infoJs$lonMax))))
   latM <- mean(c(min(unlist(infoJs$latMin)), max(unlist(infoJs$latMax))))
+  center_point <- st_sfc(st_point(c(lonM, latM)))
 
-  json$center <- list(lat = latM, lng = lonM)
+  # Transform the point to the geographic coordinate system (EPSG:4326)
+  st_crs(center_point) <- as.numeric(infoJs$epsg)
+  point_transformed <- st_transform(center_point, crs = 4326)
+  center_transformed <- st_coordinates(point_transformed)
+
+  json$center <- list(lat = center_transformed[1, ][["Y"]], lng = center_transformed[1, ][["X"]])
   json$times <- infoJs$times
   json$varMin <- infoJs$varmin
   json$varMax <- infoJs$varmax
