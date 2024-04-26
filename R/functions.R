@@ -284,14 +284,34 @@ generate_artifacts <- function(nc_root, out_root,
   t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
   infoNc <- file.info(nc_file)
 
-  # read spatial dims
+  # Previous analysis/preparation of NC file
+  nc <- nc_open(nc_file, write = TRUE)
+  ## read spatial dims
   if (missing(lon_name) || missing(lat_name)) {
-    nc <- nc_open(nc_file)
     dimNames <- returnXYNames(nc)
     lon_name <- dimNames$X
     lat_name <- dimNames$Y
-    nc_close(nc)
   }
+  print(" Step 0: Order dimensions")
+  ## Order dimensions
+  lon <- ncvar_get(nc, lon_name)
+  lat <- ncvar_get(nc, lat_name)
+  var <- ncvar_get(nc, var_id)
+  if (lon[1] > lon[length(lon)]) {
+    var <- var[order(lon), , ]
+    ncvar_put(nc, var_id, var)
+    lon <- rev(lon)
+    ncvar_put(nc, lon_name, lon)
+    print(paste0("  ", lon_name, " reversed"))
+  }
+  if (lat[1] > lat[length(lat)]) {
+    var <- var[, order(lat), ]
+    ncvar_put(nc, var_id, var)
+    lat <- rev(lat)
+    ncvar_put(nc, lat_name, lat)
+    print(paste0("  ", lat_name, " reversed"))
+  }
+  nc_close(nc)
 
   print(" Step 1: Chunk_t")
   lon_by <- 100
