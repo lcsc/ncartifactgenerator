@@ -56,7 +56,7 @@ SIZE_TYPE_SIZE <- 4
 #' @export
 #' @examples
 #' write_nc_chunk_t(in_file = "/path/ETo.nc", out_file = "/path/ETo-t.nc", lon_by = 100, lat_by = 100, lon_name = "lon", lat_name = "lat")
-write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_name = "lon", lat_name = "lat", signif_digits) {
+write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_name, lat_name, signif_digits) {
   # Open the original netCDF file
   nc_in_file <- nc_open(in_file)
 
@@ -241,7 +241,7 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
 #' @export
 #' @examples
 #' write_nc_chunk_xy(in_file = "/path/ETo.nc", out_file = "/path/ETo-xy.nc", time_by = 100, lon_name = "lon", lat_name = "lat")
-write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name = "lon", lat_name = "lat", signif_digits) {
+write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name, lat_name, signif_digits) {
   # Open the original netCDF file
   nc_in_file <- nc_open(in_file)
 

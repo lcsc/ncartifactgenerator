@@ -75,14 +75,12 @@ returnXYNames <- function(nc) {
   }
   if (sum("Y" %in% dim) > 0) {
     return(list(Y = "Y", X = "X", YPos = which("Y" == dim), XPos = which("X" == dim)))
+  } else if (sum("y" %in% dim) > 0) {
+    return(list(Y = "y", X = "x", YPos = which("y" == dim), XPos = which("x" == dim)))
+  } else if (sum("longitude" %in% dim) > 0) {
+    return(list(Y = "latitude", X = "longitude", YPos = which("latitude" == dim), XPos = which("longitude" == dim)))
   } else {
-    if (sum("longitude" %in% dim) > 0) {
-      return(list(Y = "latitude", X = "longitude", YPos = which("latitude" == dim), XPos = which("longitude" == dim)))
-    } else {
-      # if(sum("lon"%in%dim)>0){
-      return(list(Y = "lat", X = "lon", YPos = which("lat" == dim), XPos = which("lon" == dim)))
-      # }
-    }
+    return(list(Y = "lat", X = "lon", YPos = which("lat" == dim), XPos = which("lon" == dim)))
   }
 }
 
@@ -285,6 +283,15 @@ generate_artifacts <- function(nc_root, out_root,
   nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
   t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
   infoNc <- file.info(nc_file)
+
+  # read spatial dims
+  if (missing(lon_name) || missing(lat_name)) {
+    nc <- nc_open(nc_file)
+    dimNames <- returnXYNames(nc)
+    lon_name <- dimNames$X
+    lat_name <- dimNames$Y
+    nc_close(nc)
+  }
 
   print(" Step 1: Chunk_t")
   lon_by <- 100

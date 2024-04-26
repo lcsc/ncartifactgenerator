@@ -105,13 +105,6 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
 
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
 
-  # read spatial dims
-  if (missing(lon_name) || missing(lat_name)) {
-    dimNames <- returnXYNames(nc)
-    lon_name <- dimNames$X
-    lat_name <- dimNames$Y
-  }
-
   # Calculates the minimum and maximum of the netCDF dimensions corresponding to the spatial coordinates
   lon <- nc$dim[[lon_name]]$vals
   lat <- nc$dim[[lat_name]]$vals
