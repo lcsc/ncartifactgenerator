@@ -294,19 +294,30 @@ generate_artifacts <- function(nc_root, out_root,
   }
   print(" Step 0: Order dimensions")
   ## Order dimensions
+
+  var_range <- 100
   lon <- ncvar_get(nc, lon_name)
   lat <- ncvar_get(nc, lat_name)
-  var <- ncvar_get(nc, var_id)
   if (lon[1] > lon[length(lon)]) {
-    var <- var[order(lon), , ]
-    ncvar_put(nc, var_id, var)
+    for(i_lat in seq(1, length(lat), var_range)){
+      r_lat <- min(var_range, length(lat) - i_lat + 1)
+      var <- ncvar_get(nc, var_id, c(1, i_lat, 1), c(-1, r_lat, -1))
+      var <- var[order(lon), , ]
+      ncvar_put(nc, var_id, var, c(1, i_lat, 1), c(-1, r_lat, -1))
+      nc_sync(nc)      
+    }
     lon <- rev(lon)
     ncvar_put(nc, lon_name, lon)
     print(paste0("  ", lon_name, " reversed"))
   }
   if (lat[1] > lat[length(lat)]) {
-    var <- var[, order(lat), ]
-    ncvar_put(nc, var_id, var)
+    for(i_lon in seq(1, length(lon), var_range)){
+      r_lon <- min(var_range, length(lon) - i_lon + 1)
+      var <- ncvar_get(nc, var_id, c(i_lon, 1, 1), c(r_lon, -1, -1))
+      var <- var[, order(lat), ]
+      ncvar_put(nc, var_id, var, c(i_lon, 1, 1), c(r_lon, -1, -1))
+      nc_sync(nc)
+    }
     lat <- rev(lat)
     ncvar_put(nc, lat_name, lat)
     print(paste0("  ", lat_name, " reversed"))
