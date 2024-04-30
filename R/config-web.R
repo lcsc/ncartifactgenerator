@@ -69,6 +69,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
       times = list(),
       latMin = list(), latMax = list(), latNum = list(),
       lonMin = list(), lonMax = list(), lonNum = list(),
+      minVal = list(), maxVal = list(),
       varType = "f", espg = epsg,
       portions = list()
     )
@@ -114,6 +115,10 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   infoJs$latMin[[paste0(varName, portion)]] <- min(lat)
   infoJs$latMax[[paste0(varName, portion)]] <- max(lat)
   infoJs$latNum[[paste0(varName, portion)]] <- length(lat)
+  
+  minMax <- readMinMax(nc)
+  infoJs$minVal[[paste0(varName)]] <- min(minMax$minimum)
+  infoJs$maxVal[[paste0(varName)]] <- max(minMax$maximum)
 
   infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
@@ -212,6 +217,8 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetTy
   json$latMin <- infoJs$latMin
   json$latMax <- infoJs$latMax
   json$latNum <- infoJs$latNum
+  json$minVal <- infoJs$minVal
+  json$maxVal <- infoJs$maxVal
   json$varType <- infoJs$varType
   json$offsetType <- offsetType
   json$sizeType <- sizeType
