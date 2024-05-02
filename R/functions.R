@@ -273,15 +273,9 @@ generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
                                epsg, info_js, lon_name = NA, lat_name = NA,
                                write = FALSE) {
-  print(paste0("var_id: ", var_id))
-
-  # NC t chunks
   var_nc_out_folder <- file.path(out_root, "nc")
-
   dir.create(var_nc_out_folder, showWarnings = FALSE, recursive = TRUE)
-  t_nc_filename <- paste0(var_id, portion, "-t", ".nc")
   nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
-  t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
   infoNc <- file.info(nc_file)
 
   # Previous analysis/preparation of NC file
@@ -292,6 +286,8 @@ generate_artifacts <- function(nc_root, out_root,
     lon_name <- dimNames$X
     lat_name <- dimNames$Y
   }
+  var_name <- getVarName(nc)
+
   print(" Step 0: Order dimensions")
   ## Order dimensions
 
@@ -301,10 +297,10 @@ generate_artifacts <- function(nc_root, out_root,
   if (lon[1] > lon[length(lon)]) {
     for(i_lat in seq(1, length(lat), var_range)){
       r_lat <- min(var_range, length(lat) - i_lat + 1)
-      var <- ncvar_get(nc, var_id, c(1, i_lat, 1), c(-1, r_lat, -1))
+      var <- ncvar_get(nc, var_name, c(1, i_lat, 1), c(-1, r_lat, -1))
       var <- var[order(lon), , ]
-      ncvar_put(nc, var_id, var, c(1, i_lat, 1), c(-1, r_lat, -1))
-      nc_sync(nc)      
+      ncvar_put(nc, var_name, var, c(1, i_lat, 1), c(-1, r_lat, -1))
+      nc_sync(nc)
     }
     lon <- rev(lon)
     ncvar_put(nc, lon_name, lon)
@@ -313,9 +309,9 @@ generate_artifacts <- function(nc_root, out_root,
   if (lat[1] > lat[length(lat)]) {
     for(i_lon in seq(1, length(lon), var_range)){
       r_lon <- min(var_range, length(lon) - i_lon + 1)
-      var <- ncvar_get(nc, var_id, c(i_lon, 1, 1), c(r_lon, -1, -1))
+      var <- ncvar_get(nc, var_name, c(i_lon, 1, 1), c(r_lon, -1, -1))
       var <- var[, order(lat), ]
-      ncvar_put(nc, var_id, var, c(i_lon, 1, 1), c(r_lon, -1, -1))
+      ncvar_put(nc, var_name, var, c(i_lon, 1, 1), c(r_lon, -1, -1))
       nc_sync(nc)
     }
     lat <- rev(lat)
@@ -324,7 +320,10 @@ generate_artifacts <- function(nc_root, out_root,
   }
   nc_close(nc)
 
+  # NC t chunks
   print(" Step 1: Chunk_t")
+  t_nc_filename <- paste0(var_id, portion, "-t", ".nc")
+  t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
   lon_by <- 100
   lat_by <- 100
   infoT <- file.info(t_nc_file)
