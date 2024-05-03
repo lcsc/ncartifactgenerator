@@ -273,6 +273,8 @@ generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
                                epsg, info_js, lon_name = NA, lat_name = NA,
                                write = FALSE) {
+  print(paste0("Processing: ", var_id, portion, " from file ", nc_filename, portion, ".nc"))
+
   var_nc_out_folder <- file.path(out_root, "nc")
   dir.create(var_nc_out_folder, showWarnings = FALSE, recursive = TRUE)
   nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
