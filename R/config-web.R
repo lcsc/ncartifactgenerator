@@ -116,10 +116,10 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   infoJs$latMax[[paste0(varName, portion)]] <- max(lat)
   infoJs$latNum[[paste0(varName, portion)]] <- length(lat)
   
-  minMax <- readMinMax(nc)
-  infoJs$minVal[[paste0(varName)]] <- min(minMax$minimum)
-  infoJs$maxVal[[paste0(varName)]] <- max(minMax$maximum)
-
+  varMinMax <- readMinMax(nc)
+  infoJs$minVal[[paste0(varName)]] <- min(varMinMax$minimum)
+  infoJs$maxVal[[paste0(varName)]] <- max(varMinMax$maximum)
+  
   infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)
@@ -132,7 +132,6 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   }
 
   if (missing(varmin) | missing(varmax)) {
-    varMinMax <- readMinMax(nc)
     varmin <- varMinMax$minimum
     varmax <- varMinMax$maximum
   } else {
