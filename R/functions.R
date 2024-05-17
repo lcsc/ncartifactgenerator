@@ -146,9 +146,20 @@ read_coords <- function(nc, epsg) {
 #'
 #' @return A list containing the minimum and maximum values of the variable.
 readMinMax <- function(nc) {
+  time_position <- timePosition(nc)
   var_name <- getVarName(nc)
-  data <- ncvar_get(nc, nc$var[[var_name]]$name)
-  minMax <- suppressWarnings(list(minimum = apply(data, 3, min, na.rm = TRUE), maximum = apply(data, 3, max, na.rm = TRUE)))
+  length_var <- nc$var[[var_name]]$dim[[time_position]]$len
+  var_range <- length_var %/% 100
+  minimum <- array(NA, length_var)
+  maximum <- array(NA, length_var)
+  i_var <- 1
+  for(i_var in seq(1, length_var, var_range)){
+    r_var <- min(var_range, length_var - i_var + 1)
+    data <- ncvar_get(nc, nc$var[[var_name]]$name, c(1, 1, i_var), c(-1, -1, r_var))
+    minimum[c(i_var:(i_var + r_var - 1))] <- suppressWarnings(apply(data, time_position, min, na.rm = TRUE))
+    maximum[c(i_var:(i_var + r_var - 1))] <- suppressWarnings(apply(data, time_position, max, na.rm = TRUE))
+  }
+  minMax <- list(minimum = minimum, maximum = maximum)
   minMax$minimum[is.na(minMax$min)] <- 0
   minMax$maximum[is.na(minMax$max)] <- 0
   return(minMax)
