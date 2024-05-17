@@ -165,7 +165,6 @@ readMinMax <- function(nc) {
   return(minMax)
 }
 
-
 #' merge arrays using aggregation function
 #' @param arr1 array 1
 #' @param arr2 array 2
