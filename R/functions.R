@@ -282,7 +282,7 @@ get_struct_typecode <- function(nc_type) {
 generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
                                epsg, info_js, lon_name = NA, lat_name = NA,
-                               write = FALSE) {
+                               write = FALSE, calcMaxMin = FALSE) {
   print(paste0("Processing: ", var_id, portion, " from file ", nc_filename, portion, ".nc"))
 
   var_nc_out_folder <- file.path(out_root, "nc")
@@ -391,10 +391,13 @@ generate_artifacts <- function(nc_root, out_root,
     infoJs = info_js,
     lon_name = lon_name,
     lat_name = lat_name,
-    portion = portion,
-    varmax = -1,
-    varmin = -1
+    portion = portion
   )
+  
+  if(! calcMaxMin){
+    args <- c(args,varmax = -1, varmin = -1)
+  }
+
   if (!missing(epsg)) {
     args$epsg <- epsg
   }
