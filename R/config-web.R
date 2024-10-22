@@ -126,6 +126,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   infoJs$minVal[[paste0(varName)]] <- min(varMinMax$minimum)
   infoJs$maxVal[[paste0(varName)]] <- max(varMinMax$maximum)
   
+  
   infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)

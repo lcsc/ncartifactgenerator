@@ -417,6 +417,11 @@ generate_artifacts <- function(nc_root, out_root,
     time_name = time_name,
     portion = portion
   )
+  
+  if(! calcMaxMin){
+    args <- c(args,varmax = -1, varmin = -1)
+  }
+
   if (!missing(epsg)) {
     args$epsg <- epsg
   }
