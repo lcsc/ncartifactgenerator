@@ -116,7 +116,13 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   infoJs$latMax[[paste0(varName, portion)]] <- max(lat)
   infoJs$latNum[[paste0(varName, portion)]] <- length(lat)
   
-  varMinMax <- readMinMax(nc)
+  varMinMax <- NULL;
+  if (missing(varmin) | missing(varmax)) {
+    print ("Reading Min Max...")
+    varMinMax <- readMinMax(nc)
+  } else {
+    varMinMax <- list(minimum = varmin, maximum = varmax)
+  }
   infoJs$minVal[[paste0(varName)]] <- min(varMinMax$minimum)
   infoJs$maxVal[[paste0(varName)]] <- max(varMinMax$maximum)
   
@@ -130,6 +136,10 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   } else {
     times.write <- read_times(nc)
   }
+
+# print(infoJs$times)
+
+print(times.write)
 
   if (missing(varmin) | missing(varmax)) {
     varmin <- varMinMax$minimum

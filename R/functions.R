@@ -84,7 +84,6 @@ returnXYNames <- function(nc) {
   }
 }
 
-
 #' read_times Function
 #'
 #' This function reads the time values from a NetCDF file and converts them to Date objects.
@@ -203,7 +202,7 @@ timePosition <- function(nc) {
 #' @return var name
 getVarName <- function(nc) {
   var_names <- names(nc$var)
-  var_name <- var_names[!var_names %in% c("crs")][1]
+  var_name <- var_names[!var_names %in% c("crs", "time_bounds")][1]
   return(var_name)
 }
 
@@ -275,14 +274,16 @@ get_struct_typecode <- function(nc_type) {
 #' @param lon_name The name of the longitude dimension.
 #' @param lat_name The name of the latitude dimension.
 #' @param write A logical value indicating whether to write the artifacts to disk. Default is FALSE.
+#' @param calcMaxMin A logical value indicating whether to calculate the maximum and minimum values of the variable. Default is FALSE.
+#' @param nc_dims The number of dims of each variable (annual climatologies: variable time has only one date). Default is 3. 
 #'
 #' @return The information for the JavaScript configuration.
 #'
 #' @export
 generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
-                               epsg, info_js, lon_name = NA, lat_name = NA,
-                               write = FALSE) {
+                               epsg, info_js, lon_name = NA, lat_name = NA, time_name = NA,
+                               write = FALSE, calcMaxMin = FALSE, nc_dims = 3) {
   print(paste0("Processing: ", var_id, portion, " from file ", nc_filename, portion, ".nc"))
 
   var_nc_out_folder <- file.path(out_root, "nc")
@@ -298,6 +299,17 @@ generate_artifacts <- function(nc_root, out_root,
     lon_name <- dimNames$X
     lat_name <- dimNames$Y
   }
+
+  if (missing(time_name)) {
+    dim <- array(NA, dim = nc$ndims)
+    for (i in 1:nc$ndims) {
+      if (nc$dim[[i]]$name != lon_name && nc$dim[[i]]$name != lat_name) {
+        print(nc$dim[[i]]$name)
+        time_name <- nc$dim[[i]]$name
+      }
+    }
+  }
+  
   var_name <- getVarName(nc)
 
   print(" Step 0: Order dimensions")
@@ -310,7 +322,12 @@ generate_artifacts <- function(nc_root, out_root,
     for(i_lat in seq(1, length(lat), var_range)){
       r_lat <- min(var_range, length(lat) - i_lat + 1)
       var <- ncvar_get(nc, var_name, c(1, i_lat, 1), c(-1, r_lat, -1))
-      var <- var[order(lon), , ]
+      # var <- var[order(lon), , ]  
+      if (nc_dims == 3) {
+        var <- var[order(lon), , ]
+      } else {
+        var <- var[order(lon), ]
+      }
       ncvar_put(nc, var_name, var, c(1, i_lat, 1), c(-1, r_lat, -1))
       nc_sync(nc)
     }
@@ -322,7 +339,12 @@ generate_artifacts <- function(nc_root, out_root,
     for(i_lon in seq(1, length(lon), var_range)){
       r_lon <- min(var_range, length(lon) - i_lon + 1)
       var <- ncvar_get(nc, var_name, c(i_lon, 1, 1), c(r_lon, -1, -1))
-      var <- var[, order(lat), ]
+      # var <- var[, order(lat), ]
+      if (nc_dims == 3) {
+        var <- var[, order(lat), ]
+      } else {
+        var <- var[, order(lat)]
+      }
       ncvar_put(nc, var_name, var, c(i_lon, 1, 1), c(r_lon, -1, -1))
       nc_sync(nc)
     }
@@ -340,9 +362,9 @@ generate_artifacts <- function(nc_root, out_root,
   lat_by <- 100
   infoT <- file.info(t_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
-    write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by, lon_name = lon_name, lat_name = lat_name)
+    write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by, lon_name = lon_name, lat_name = lat_name, time_name = time_name)
   } else {
-    print("  Skipped (already newer)")
+    print("Skipped (already newer)")
   }
   # BIN t chunks directory
   print(" Step 2: Bin_t")
@@ -362,7 +384,7 @@ generate_artifacts <- function(nc_root, out_root,
   time_by <- 100
   infoT <- file.info(xy_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
-    write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by, lon_name = lon_name, lat_name = lat_name)
+    write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by, lon_name = lon_name, lat_name = lat_name, time_name = time_name)
   } else {
     print("  Skipped (already newer)")
   }
@@ -381,7 +403,8 @@ generate_artifacts <- function(nc_root, out_root,
   # times.json
   print(" Step 5: times.json")
   nc <- nc_open(nc_file)
-  dim_time <- dim(ncvar_get(nc, "time"))
+  #  dim_time <- dim(ncvar_get(nc, "time"))
+  dim_time <- dim(ncvar_get(nc, time_name))
   nc_close(nc)
   args <- list(
     file = nc_file,
@@ -391,9 +414,8 @@ generate_artifacts <- function(nc_root, out_root,
     infoJs = info_js,
     lon_name = lon_name,
     lat_name = lat_name,
-    portion = portion,
-    varmax = -1,
-    varmin = -1
+    time_name = time_name,
+    portion = portion
   )
   if (!missing(epsg)) {
     args$epsg <- epsg
