@@ -10,7 +10,7 @@ pacman::p_load(
 
 p <- ggplot(aes(x = mpg, y = wt), data = mtcars) + geom_point()
 p <- p + theme_void() + theme_transparent()
-sticker(subplot = "./figures/frog.png",
+sticker(subplot = "./man/figures/frog.png",
         s_x	= 1,
         s_y	= 0.7,
         s_width = 117/128 * 0.4,
