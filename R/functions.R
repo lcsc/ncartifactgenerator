@@ -364,7 +364,7 @@ generate_artifacts <- function(nc_root, out_root,
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
     write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by, lon_name = lon_name, lat_name = lat_name, time_name = time_name)
   } else {
-    print("Skipped (already newer)")
+    print("  Skipped (already newer)")
   }
   # BIN t chunks directory
   print(" Step 2: Bin_t")

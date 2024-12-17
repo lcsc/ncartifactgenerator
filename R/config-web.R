@@ -138,10 +138,6 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     times.write <- read_times(nc)
   }
 
-# print(infoJs$times)
-
-print(times.write)
-
   if (missing(varmin) | missing(varmax)) {
     varmin <- varMinMax$minimum
     varmax <- varMinMax$maximum
