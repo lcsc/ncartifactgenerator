@@ -294,7 +294,9 @@ get_struct_typecode <- function(nc_type) {
 #' @param lat_name The name of the latitude dimension.
 #' @param write A logical value indicating whether to write the artifacts to disk. Default is FALSE.
 #' @param calcMaxMin A logical value indicating whether to calculate the maximum and minimum values of the variable. Default is FALSE.
-#' @param nc_dims The number of dims of each variable (annual climatologies: variable time has only one date). Default is 3. 
+#' @param nc_dims The number of dims of each variable (annual climatologies: variable time has only one date). Default is 3.
+#' @param lon_by Number of pixels horizontally that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
+#' @param lat_by Number of pixels vertically that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
 #'
 #' @return The information for the JavaScript configuration.
 #'
@@ -302,7 +304,7 @@ get_struct_typecode <- function(nc_type) {
 generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
                                epsg, info_js, lon_name = NA, lat_name = NA, time_name = NA,
-                               write = FALSE, calcMaxMin = FALSE, nc_dims = 3) {
+                               write = FALSE, calcMaxMin = FALSE, nc_dims = 3, lon_by = 100, lat_by = 100) {
   print(paste0("Processing: ", var_id, portion, " from file ", nc_filename, portion, ".nc"))
 
   var_nc_out_folder <- file.path(out_root, "nc")
@@ -327,7 +329,7 @@ generate_artifacts <- function(nc_root, out_root,
       }
     }
   }
-  
+
   var_name <- getVarName(nc)
 
   print(" Step 0: Order dimensions")
@@ -376,8 +378,6 @@ generate_artifacts <- function(nc_root, out_root,
   print(" Step 1: Chunk_t")
   t_nc_filename <- paste0(var_id, portion, "-t", ".nc")
   t_nc_file <- file.path(var_nc_out_folder, t_nc_filename)
-  lon_by <- 100
-  lat_by <- 100
   infoT <- file.info(t_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
     write_nc_chunk_t(in_file = nc_file, out_file = t_nc_file, lon_by = lon_by, lat_by = lat_by, lon_name = lon_name, lat_name = lat_name, time_name = time_name)
@@ -435,7 +435,7 @@ generate_artifacts <- function(nc_root, out_root,
     time_name = time_name,
     portion = portion
   )
-  
+
   if(! calcMaxMin){
     args <- c(args,varmax = -1, varmin = -1)
   }
