@@ -142,26 +142,45 @@ read_coords <- function(nc, epsg) {
 #' This function reads the minimum and maximum values of a variable from a NetCDF file.
 #'
 #' @param nc The NetCDF file object.
+#' @param batch_size The size of time batch to read. Default is 100.
 #'
-#' @return A list containing the minimum and maximum values of the variable.
-readMinMax <- function(nc) {
-  time_position <- timePosition(nc)
+#' @return A list containing the minimum and maximum values of the variable for each time.
+readMinMax <- function(nc, batch_size = 100) {
   var_name <- getVarName(nc)
-  length_var <- nc$var[[var_name]]$dim[[time_position]]$len
-  var_range <- length_var %/% 100
-  minimum <- array(NA, length_var)
-  maximum <- array(NA, length_var)
-  i_var <- 1
-  for(i_var in seq(1, length_var, var_range)){
-    r_var <- min(var_range, length_var - i_var + 1)
-    data <- ncvar_get(nc, nc$var[[var_name]]$name, c(1, 1, i_var), c(-1, -1, r_var))
-    minimum[c(i_var:(i_var + r_var - 1))] <- suppressWarnings(apply(data, time_position, min, na.rm = TRUE))
-    maximum[c(i_var:(i_var + r_var - 1))] <- suppressWarnings(apply(data, time_position, max, na.rm = TRUE))
+
+  # Get dimensions
+  dims <- nc$var[[var_name]]$dim
+  time_dim <- dims[[length(dims)]]$len
+
+  # Initialize result vectors
+  mins <- numeric(time_dim)
+  maxs <- numeric(time_dim)
+
+  # Process in batches
+  for (i in seq(1, time_dim, by = batch_size)) {
+    # Calculate end of current batch
+    end_idx <- min(i + batch_size - 1, time_dim)
+    batch_len <- end_idx - i + 1
+
+    # Read batch of data
+    start <- c(1, 1, i)
+    count <- c(-1, -1, batch_len)
+    data_batch <- ncvar_get(nc, var_name, start = start, count = count)
+
+    # Calculate min/max for each time step in batch
+    batch_min <- suppressWarnings(apply(data_batch, 3, min, na.rm = TRUE))
+    batch_max <- suppressWarnings(apply(data_batch, 3, max, na.rm = TRUE))
+
+    # Replace NAs with 0
+    batch_min[is.na(batch_min)] <- 0
+    batch_max[is.na(batch_max)] <- 0
+
+    # Store results
+    mins[i:end_idx] <- batch_min
+    maxs[i:end_idx] <- batch_max
   }
-  minMax <- list(minimum = minimum, maximum = maximum)
-  minMax$minimum[is.na(minMax$min)] <- 0
-  minMax$maximum[is.na(minMax$max)] <- 0
-  return(minMax)
+
+  return(list(minimum = mins, maximum = maxs))
 }
 
 #' merge arrays using aggregation function
