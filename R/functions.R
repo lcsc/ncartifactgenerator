@@ -142,10 +142,10 @@ read_coords <- function(nc, epsg) {
 #' This function reads the minimum and maximum values of a variable from a NetCDF file.
 #'
 #' @param nc The NetCDF file object.
-#' @param batch_size The size of time batch to read. Default is 100.
+#' @param time_by The size of time batch to read. Default is 100.
 #'
 #' @return A list containing the minimum and maximum values of the variable for each time.
-readMinMax <- function(nc, batch_size = 100) {
+readMinMax <- function(nc, time_by = 100) {
   var_name <- getVarName(nc)
 
   # Get dimensions
@@ -157,9 +157,9 @@ readMinMax <- function(nc, batch_size = 100) {
   maxs <- numeric(time_dim)
 
   # Process in batches
-  for (i in seq(1, time_dim, by = batch_size)) {
+  for (i in seq(1, time_dim, by = time_by)) {
     # Calculate end of current batch
-    end_idx <- min(i + batch_size - 1, time_dim)
+    end_idx <- min(i + time_by - 1, time_dim)
     batch_len <- end_idx - i + 1
 
     # Read batch of data
@@ -297,6 +297,7 @@ get_struct_typecode <- function(nc_type) {
 #' @param nc_dims The number of dims of each variable (annual climatologies: variable time has only one date). Default is 3.
 #' @param lon_by Number of pixels horizontally that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
 #' @param lat_by Number of pixels vertically that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
+#' @param time_by Number of time steps that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
 #'
 #' @return The information for the JavaScript configuration.
 #'
@@ -304,7 +305,7 @@ get_struct_typecode <- function(nc_type) {
 generate_artifacts <- function(nc_root, out_root,
                                nc_filename, portion, var_id,
                                epsg, info_js, lon_name = NA, lat_name = NA, time_name = NA,
-                               write = FALSE, calcMaxMin = FALSE, nc_dims = 3, lon_by = 100, lat_by = 100) {
+                               write = FALSE, calcMaxMin = FALSE, nc_dims = 3, lon_by = 100, lat_by = 100, time_by = 100) {
   print(paste0("Processing: ", var_id, portion, " from file ", nc_filename, portion, ".nc"))
 
   var_nc_out_folder <- file.path(out_root, "nc")
@@ -399,7 +400,6 @@ generate_artifacts <- function(nc_root, out_root,
   print(" Step 3: Chunk_xy")
   xy_nc_filename <- paste0(var_id, portion, "-xy", ".nc")
   xy_nc_file <- file.path(var_nc_out_folder, xy_nc_filename)
-  time_by <- 100
   infoT <- file.info(xy_nc_file)
   if (is.na(infoT$mtime) || infoT$mtime < infoNc$mtime) {
     write_nc_chunk_xy(in_file = nc_file, out_file = xy_nc_file, time_by = time_by, lon_name = lon_name, lat_name = lat_name, time_name = time_name)
@@ -433,6 +433,7 @@ generate_artifacts <- function(nc_root, out_root,
     lon_name = lon_name,
     lat_name = lat_name,
     time_name = time_name,
+    time_by = time_by,
     portion = portion
   )
 

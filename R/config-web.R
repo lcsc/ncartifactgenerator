@@ -58,12 +58,13 @@ library(jsonlite)
 #' @param lon_name Name of the longitude dimension.
 #' @param lat_name Name of the latitude dimension.
 #' @param time_name Name of the time dimension.
+#' @param time_by Number of time steps that will be read as a block during the read/write loop. -1 to read all at once. Default is 100.
 #' @param portion Portion of the netCDF file to process.
 #'
 #' @return List with the generated web configuration.
 #'
 #' @export
-config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName, infoJs = NA, lon_name, lat_name, time_name = "time", portion) {
+config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName, infoJs = NA, lon_name, lat_name, time_name = "time", time_by = 100, portion) {
   if (missing(infoJs) || sum(!is.na(infoJs)) == 0) {
     infoJs <- list(
       times = list(),
@@ -119,7 +120,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   varMinMax <- NULL;
   if (missing(varmin) | missing(varmax)) {
     print ("Reading Min Max...")
-    varMinMax <- readMinMax(nc)
+    varMinMax <- readMinMax(nc, time_by)
   } else {
     varMinMax <- list(minimum = varmin, maximum = varmax)
   }
