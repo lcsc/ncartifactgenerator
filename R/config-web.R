@@ -75,6 +75,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     )
   }
 
+print ('------------------------')
   # CLARIFICATION!
   # var_name is the name of the primary variable within the ncfile
   # varName is the name of the nc file without the .nc extension
@@ -121,13 +122,12 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     print ("Reading Min Max...")
     varMinMax <- readMinMax(nc)
   } else {
-    minMax <- list(minimum = varmin, maximum = varmax)
+    varMinMax <- list(minimum = varmin, maximum = varmax)
   }
   infoJs$minVal[[paste0(varName)]] <- min(varMinMax$minimum)
   infoJs$maxVal[[paste0(varName)]] <- max(varMinMax$maximum)
   
-  
-  infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
+   infoJs$portions[[varName]] <- I(c(infoJs$portions[[varName]], portion))
 
   infoJs$varType <- get_struct_typecode(nc$var[[var_name]]$prec)
 
@@ -137,6 +137,8 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   } else {
     times.write <- read_times(nc)
   }
+
+  print(times)
 
   if (missing(varmin) | missing(varmax)) {
     varmin <- varMinMax$minimum
