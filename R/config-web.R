@@ -123,6 +123,7 @@ print ('------------------------')
     varMinMax <- readMinMax(nc)
   } else {
     varMinMax <- list(minimum = varmin, maximum = varmax)
+    varMinMax <- list(minimum = varmin, maximum = varmax)
   }
   infoJs$minVal[[paste0(varName)]] <- min(varMinMax$minimum)
   infoJs$maxVal[[paste0(varName)]] <- max(varMinMax$maximum)
@@ -138,7 +139,9 @@ print ('------------------------')
     times.write <- read_times(nc)
   }
 
-  print(times)
+# print(infoJs$times)
+
+print(times.write)
 
   if (missing(varmin) | missing(varmax)) {
     varmin <- varMinMax$minimum
