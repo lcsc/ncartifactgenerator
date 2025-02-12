@@ -61,7 +61,6 @@ write_nc_chunk_t <- function(in_file, out_file, lon_by = -1, lat_by = -1, lon_na
   nc_in_file <- nc_open(in_file)
 
   var_name <- getVarName(nc_in_file)
-print(paste0('var_name ', var_name))
 
   # Reads global attributes
   global_att <- ncatt_get(nc_in_file, 0)

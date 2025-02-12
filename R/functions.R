@@ -304,7 +304,6 @@ generate_artifacts <- function(nc_root, out_root,
     dim <- array(NA, dim = nc$ndims)
     for (i in 1:nc$ndims) {
       if (nc$dim[[i]]$name != lon_name && nc$dim[[i]]$name != lat_name) {
-        print(nc$dim[[i]]$name)
         time_name <- nc$dim[[i]]$name
       }
     }

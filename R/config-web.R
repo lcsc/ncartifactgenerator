@@ -75,7 +75,6 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     )
   }
 
-print ('------------------------')
   # CLARIFICATION!
   # var_name is the name of the primary variable within the ncfile
   # varName is the name of the nc file without the .nc extension
@@ -119,7 +118,6 @@ print ('------------------------')
   
   varMinMax <- NULL;
   if (missing(varmin) | missing(varmax)) {
-    print ("Reading Min Max...")
     varMinMax <- readMinMax(nc)
   } else {
     varMinMax <- list(minimum = varmin, maximum = varmax)
@@ -138,10 +136,6 @@ print ('------------------------')
   } else {
     times.write <- read_times(nc)
   }
-
-# print(infoJs$times)
-
-print(times.write)
 
   if (missing(varmin) | missing(varmax)) {
     varmin <- varMinMax$minimum
