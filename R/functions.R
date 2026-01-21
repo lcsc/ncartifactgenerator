@@ -314,7 +314,7 @@ generate_artifacts <- function(nc_root, out_root,
   infoNc <- file.info(nc_file)
 
   # Previous analysis/preparation of NC file
-  nc <- nc_open(nc_file, write = TRUE)
+  nc <- nc_open(nc_file, write = FALSE)
   ## read spatial dims
   if (missing(lon_name) || missing(lat_name)) {
     dimNames <- returnXYNames(nc)
@@ -339,6 +339,15 @@ generate_artifacts <- function(nc_root, out_root,
   var_range <- 100
   lon <- ncvar_get(nc, lon_name)
   lat <- ncvar_get(nc, lat_name)
+
+  if ((lon[1] > lon[length(lon)]) | (lat[1] > lat[length(lat)])) {
+    # We need to close and reopen the file with write=TRUE to modify it
+    # The file was initially opened in read-only mode (write=FALSE)
+
+    nc_close(nc)
+    nc <- nc_open(nc_file, write = TRUE)
+  }
+
   if (lon[1] > lon[length(lon)]) {
     for(i_lat in seq(1, length(lat), var_range)){
       r_lat <- min(var_range, length(lat) - i_lat + 1)
