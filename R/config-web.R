@@ -72,6 +72,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
       lonMin = list(), lonMax = list(), lonNum = list(),
       minVal = list(), maxVal = list(),
       varType = "f", espg = epsg,
+      legendTitle = list(),
       portions = list()
     )
   }
@@ -93,6 +94,11 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
     if (missing(file) | write) {
       varName <- "NaN"
     }
+  }
+
+  if (!missing(file)) {
+    units_att <- ncatt_get(nc, var_name, "units")
+    infoJs$legendTitle[[varName]] <- if (units_att$hasatt) units_att$value else "adim"
   }
 
   # read epsg
@@ -192,7 +198,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
 #' @return The generated JSON string.
 #'
 #' @export
-writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetType = "Q", sizeType = "I", minify = TRUE) {
+writeJson <- function(folder, infoJs, varTitle, legendTitle = NULL, offsetType = "Q", sizeType = "I", minify = TRUE) {
   file <- file.path(folder, "times.json")
 
   json <- list()
@@ -212,10 +218,11 @@ writeJson <- function(folder, infoJs, varTitle, legendTitle = "Legend", offsetTy
   json$varMin <- infoJs$varmin
   json$varMax <- infoJs$varmax
   json$varTitle <- varTitle
-  if (length(legendTitle) > 1) {
-    json$legendTitle <- legendTitle
+  effective_legend <- if (!is.null(legendTitle) && length(legendTitle) > 0) legendTitle else infoJs$legendTitle
+  if (length(effective_legend) > 1) {
+    json$legendTitle <- effective_legend
   } else {
-    json$legendTitle <- list("NaN" = list(legendTitle))
+    json$legendTitle <- list("NaN" = list(effective_legend))
   }
   json$portions <- infoJs$portions
   json$lonMin <- infoJs$lonMin
