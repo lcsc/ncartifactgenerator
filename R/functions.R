@@ -313,6 +313,25 @@ generate_artifacts <- function(nc_root, out_root,
   nc_file <- file.path(nc_root, paste0(nc_filename, portion, ".nc"))
   infoNc <- file.info(nc_file)
 
+  done_marker <- file.path(var_nc_out_folder, paste0(var_id, portion, ".done"))
+  artifact_suffixes <- c("-t.nc", "-t.bin", "-xy.nc", "-xy.bin")
+  artifact_files <- file.path(var_nc_out_folder, paste0(var_id, portion, artifact_suffixes))
+
+  needs_cleanup <- FALSE
+  if (!file.exists(done_marker)) {
+    needs_cleanup <- TRUE
+  } else if (infoNc$mtime > file.info(done_marker)$mtime) {
+    file.remove(done_marker)
+    needs_cleanup <- TRUE
+  }
+  if (needs_cleanup) {
+    existing <- artifact_files[file.exists(artifact_files)]
+    if (length(existing) > 0) {
+      file.remove(existing)
+      cat(sprintf("  Cleaned up %d incomplete/stale artifact(s) for %s%s\n", length(existing), var_id, portion))
+    }
+  }
+
   # Previous analysis/preparation of NC file
   nc <- nc_open(nc_file, write = FALSE)
   ## read spatial dims
@@ -426,6 +445,8 @@ generate_artifacts <- function(nc_root, out_root,
   } else {
     print("  Skipped (already newer)")
   }
+
+  file.create(done_marker)
 
   # times.json
   print(" Step 5: times.json")
