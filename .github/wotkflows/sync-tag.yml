@@ -1,0 +1,30 @@
+name: Sync Tag to PTI-Clima Organization
+on:
+  push:
+    tags:
+      - "**"
+
+jobs:
+  sync-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror repo manually
+        env:
+          ENV_ORIG: ${{ secrets.SEC_ORIG }}
+          ENV_DEST: ${{ secrets.SEC_DEST }}
+          DEST_ORG: "PTI-Clima"
+          BRANCH: "main"
+        run: |
+          OWNER_NAME=${{ github.repository_owner }}
+          REPO_NAME=${GITHUB_REPOSITORY#*/}
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          if [[ "$GITHUB_REPOSITORY" == "${DEST_ORG}/${REPO_NAME}" ]]; then
+            echo "This is the destination repository. Ending workflow."
+            exit 0
+          fi
+
+          git clone "https://oauth2:${ENV_ORIG}@github.com/${OWNER_NAME}/${REPO_NAME}.git"
+          cd $REPO_NAME
+          git push --force "https://oauth2:${ENV_DEST}@github.com/${DEST_ORG}/${REPO_NAME}.git" $BRANCH
+          git push --force "https://oauth2:${ENV_DEST}@github.com/${DEST_ORG}/${REPO_NAME}.git" refs/tags/$TAG_NAME
