@@ -1,15 +1,145 @@
 # <img src="man/figures/badge.png" alt="image" width="100"/> ncartifactgenerator
 
-## Summary
-
-This library takes the 3D gridded datasets from `data_flow` and `index_flow` and creates the objects necessary to serve the information on the web-based visualisation tools.
+An R package that converts 3D gridded NetCDF files into the artefacts required to serve climate data directly from static file storage to web-based viewers, without a GeoServer or OGC endpoint. It is the **final stage** of the PTI+ Clima data pipeline, transforming the output of the [`indexCalc`](https://github.com/PTI-Clima/indexCalc) and [`data_flow`](https://github.com/PTI-Clima/data_flow) repositories into files that can be consumed by a browser using plain HTTP range requests.
 
 
-## Details
+## Purpose
 
-The objects created consist on netCDF files with structure optimized to serve information to the web interface, plus JSON index files needed to find the precise data requested by the user.
+Standard NetCDF files are laid out on disk in row-major order, which is inefficient when a web client needs either (a) the full time series for a single pixel, or (b) a spatial map for a single date. This package solves the problem by producing two complementary rechunked copies of each NetCDF file, one optimised for each access pattern, together with compact binary index files that tell the browser exactly which byte range to fetch.
+
+The outputs for a single variable and spatial domain are:
+
+| File | Chunk structure | Optimal for |
+|---|---|---|
+| `<var><portion>-t.nc` | 1 × 1 × T | Pixel time-series queries |
+| `<var><portion>-t.bin` | 12 bytes × (lon × lat) | Byte offset index for `-t.nc` |
+| `<var><portion>-xy.nc` | X × Y × 1 | Map queries (single date) |
+| `<var><portion>-xy.bin` | 12 bytes × T | Byte offset index for `-xy.nc` |
+| `times.json` | — | Global metadata: extents, time steps, value ranges |
+
+The web viewer uses `times.json` to discover available variables and dates, and the `.bin` index files to issue a single HTTP range request that retrieves exactly the right chunk from the corresponding `.nc` file.
 
 
-## Instructions
+## Repository Structure
+
+```
+ncartifactgenerator/
+├── R/
+│   ├── functions.R      ← NetCDF utilities, generate_artifacts(), config_web()
+│   ├── chunk.R          ← write_nc_chunk_t/xy(), write_nc_*_chunk_dir_iter()
+│   └── config-web.R     ← config_web(), writeJson()
+├── man/                 ← Roxygen-generated documentation
+└── DESCRIPTION          ← Package metadata
+```
 
 
+## Prerequisites
+
+- **R ≥ 1.8.0**
+- R packages: `ncdf4`, `hdf5r`, `bit64`, `js`, `sf`, `raster`, `R.utils`
+
+All dependencies are listed in `DESCRIPTION` and are installed automatically by `install.packages()` or `devtools::install_github()`.
+
+
+## Installation
+
+```r
+# From GitHub
+devtools::install_github("PTI-Clima/ncartifactgenerator")
+
+# Or from a local clone
+devtools::install("path/to/ncartifactgenerator")
+```
+
+
+## Usage
+
+The typical call pattern, as used by the `lcsc-dags` viewer scripts, is:
+
+```r
+library('ncartifactgenerator')
+
+nc_root  <- "/path/to/nc/input"    # directory containing source NetCDF files
+out_root <- "/path/to/web/output"  # directory for generated artefacts
+epsg     <- "4326"                 # EPSG code of input files
+
+# Define variables to process: one row per (variable, source file, spatial portions)
+ncVars <- data.frame(
+  var      = c("ffd",  "lfd"),
+  file     = c("primera_helada/ff", "ultima_helada/lf"),
+  stringsAsFactors = FALSE
+)
+portions <- c("_pen", "_can")
+
+# Process each variable × portion, accumulating metadata into info_js
+info_js <- NA
+for (i in seq_len(nrow(ncVars))) {
+  for (portion in portions) {
+    info_js <- generate_artifacts(
+      nc_root      = nc_root,
+      out_root     = out_root,
+      nc_filename  = ncVars$file[i],
+      portion      = portion,
+      var_id       = ncVars$var[i],
+      epsg         = epsg,
+      info_js      = info_js,
+      write        = FALSE
+    )
+  }
+}
+
+# Write the final times.json index
+writeJson(
+  folder      = out_root,
+  infoJs      = info_js,
+  varTitle    = list("ffd" = "First frost day", "lfd" = "Last frost day"),
+  legendTitle = list("ffd" = "days", "lfd" = "days"),
+  minify      = TRUE
+)
+```
+
+`generate_artifacts()` is idempotent: it skips rechunking steps whose output file is already newer than the source NetCDF, so re-running after a partial failure is safe.
+
+
+## Output
+
+For a call with `var_id = "ffd"`, `portion = "_pen"`, and `out_root = "/data/web/amm"`:
+
+```
+/data/web/amm/
+├── nc/
+│   ├── ffd_pen-t.nc      ← rechunked NetCDF (pixel time-series)
+│   ├── ffd_pen-t.bin     ← pixel index (lon×lat entries of 12 bytes each)
+│   ├── ffd_pen-xy.nc     ← rechunked NetCDF (date maps)
+│   └── ffd_pen-xy.bin    ← date index (T entries of 12 bytes each)
+└── times.json            ← metadata index for all processed variables
+```
+
+
+## Key Functions
+
+| Function | Description |
+|---|---|
+| `generate_artifacts()` | Main entry point; runs the full 5-step pipeline for one variable + portion |
+| `writeJson()` | Writes `times.json` from accumulated metadata after all variables are processed |
+| `fusion_pen_can()` | Merges separate peninsular and Canary Islands NetCDF files into one grid |
+| `write_nc_chunk_t()` | Creates the time-series-optimised rechunked NetCDF (`-t.nc`) |
+| `write_nc_chunk_xy()` | Creates the map-optimised rechunked NetCDF (`-xy.nc`) |
+| `write_nc_t_chunk_dir_iter()` | Creates the binary pixel index (`-t.bin`) |
+| `write_nc_xy_chunk_dir_iter()` | Creates the binary date index (`-xy.bin`) |
+| `config_web()` | Accumulates per-variable spatial extent and value-range metadata |
+
+
+## Further Documentation
+
+See [docs/full_documentation.md](docs/full_documentation.md) for a full description of the serverless access architecture, the rechunking and binary index algorithms, the `times.json` schema, and complete function-level API reference.
+
+
+## License
+
+GPL (≥ 3) — see [LICENSE.md](LICENSE.md).
+
+
+## Authors
+
+Borja Latorre-Garcés (EEAD-CSIC), Fergus Reig-Gracia (IPE-CSIC), Eduardo Moreno-Lamana (IPE-CSIC), Daniel Vilas-Perulán (EEAD-CSIC), Manuel Arretxea-Iriarte (IGEO-CSIC).
