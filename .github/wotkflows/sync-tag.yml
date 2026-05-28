@@ -13,7 +13,7 @@ jobs:
           ENV_ORIG: ${{ secrets.SEC_ORIG }}
           ENV_DEST: ${{ secrets.SEC_DEST }}
           DEST_ORG: "PTI-Clima"
-          BRANCH: "main"
+          BRANCH: "master"
         run: |
           OWNER_NAME=${{ github.repository_owner }}
           REPO_NAME=${GITHUB_REPOSITORY#*/}
