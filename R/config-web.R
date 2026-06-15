@@ -83,6 +83,7 @@ config_web <- function(file, folder, epsg, formatdates, varmin, varmax, varName,
   if (!missing(file)) {
     # open nc
     nc <- nc_open(file)
+    on.exit(nc_close(nc), add = TRUE)
     var_name <- getVarName(nc)
   }
 
