@@ -28,6 +28,9 @@ ncartifactgenerator/
 │   ├── functions.R      ← NetCDF utilities, generate_artifacts(), config_web()
 │   ├── chunk.R          ← write_nc_chunk_t/xy(), write_nc_*_chunk_dir_iter()
 │   └── config-web.R     ← config_web(), writeJson()
+├── docker/
+│   ├── Dockerfile       ← Reproducible image with HDF5 ≥ 1.12.2 and the patched hdf5r
+│   └── Rinstall.sh      ← Helper script used by the Dockerfile to install R packages
 ├── man/                 ← Roxygen-generated documentation
 └── DESCRIPTION          ← Package metadata
 ```
@@ -36,9 +39,30 @@ ncartifactgenerator/
 ## Prerequisites
 
 - **R ≥ 1.8.0**
-- R packages: `ncdf4`, `hdf5r`, `bit64`, `js`, `sf`, `raster`, `R.utils`
+- R packages: `ncdf4`, `hdf5r` (patched fork, see below), `bit64`, `js`, `sf`, `raster`, `R.utils`
+- **HDF5 system library ≥ 1.12.2** (see below)
 
-All dependencies are listed in `DESCRIPTION` and are installed automatically by `install.packages()` or `devtools::install_github()`.
+Most dependencies are listed in `DESCRIPTION` and are installed automatically by `install.packages()` or `devtools::install_github()`. However, two of them require special attention:
+
+### Patched `hdf5r` fork
+
+To build the `.bin` chunk index files, the package needs to query the byte offset and size of every chunk stored inside the rechunked NetCDF/HDF5 files. The HDF5 C library exposes this through the `H5Dget_chunk_info_by_coord()` function, but the CRAN release of [`hdf5r`](https://github.com/hhoeflin/hdf5r) does not wrap it. For this reason we maintain a fork of the library at [lcsc/hdf5r](https://github.com/lcsc/hdf5r) (branch `chunk_functions`) that exposes `get_chunk_info_by_coord` to R code. You must install this fork instead of the CRAN version:
+
+```r
+devtools::install_github("lcsc/hdf5r@chunk_functions")
+```
+
+### HDF5 system library ≥ 1.12.2
+
+`H5Dget_chunk_info_by_coord()` and the related chunk-query API are only fully available and reliable in **HDF5 1.12.2 or later**, so the HDF5 library provided by the operating system (against which `hdf5r` is compiled) must meet this minimum version. You can check the installed version with:
+
+```sh
+h5cc -showconfig | grep "HDF5 Version"
+# or
+pkg-config --modversion hdf5
+```
+
+If your distribution ships an older HDF5 (e.g. Ubuntu 22.04 ships 1.10.7 and Ubuntu 24.04 ships 1.10.10), install a recent release from the [HDF Group](https://www.hdfgroup.org/downloads/hdf5/) before compiling `hdf5r`, or simply use the Docker image described below, which takes care of both requirements.
 
 
 ## Installation
@@ -99,6 +123,93 @@ writeJson(
 ```
 
 `generate_artifacts()` is idempotent: it skips rechunking steps whose output file is already newer than the source NetCDF, so re-running after a partial failure is safe.
+
+
+## Running with Docker
+
+Because the package depends on a patched `hdf5r` fork and on HDF5 ≥ 1.12.2 (see [Prerequisites](#prerequisites)), the easiest way to get a working environment is the Docker image defined in [docker/Dockerfile](docker/Dockerfile). The image is based on the [rocker devcontainer](https://github.com/rocker-org/devcontainer-images) images and performs three steps:
+
+1. Installs **HDF5 1.14.2** from the official HDF Group binary release, satisfying the ≥ 1.12.2 requirement.
+2. Installs the patched **`lcsc/hdf5r`** fork (branch `chunk_functions`) together with the remaining R dependencies, using the `Rinstall.sh` helper script and [`pak`](https://pak.r-lib.org/).
+3. Installs **`ncartifactgenerator`** itself from GitHub.
+
+### Building the image
+
+```sh
+cd docker
+docker build . -t ncartifactgenerator
+```
+
+The build can be customised with build arguments (defaults shown):
+
+```sh
+docker build . -t ncartifactgenerator \
+  --build-arg VARIANT=4.3 \                          # R version
+  --build-arg BASE_IMAGE=tidyverse \                 # rocker devcontainer flavour
+  --build-arg HDF5_BRANCH=chunk_functions \          # branch of lcsc/hdf5r
+  --build-arg NCARTIFACTGENERATOR_BRANCH=master      # branch of lcsc/ncartifactgenerator
+```
+
+### Running a generation script
+
+Save the script from the [Usage](#usage) section (e.g. as `generate.R`), adjusting `nc_root` and `out_root` to paths *inside the container*, and run it by mounting the input and output directories as volumes:
+
+```sh
+docker run --rm \
+  -v /path/to/nc/input:/data/input:ro \
+  -v /path/to/web/output:/data/output \
+  -v "$(pwd)/generate.R":/data/generate.R:ro \
+  ncartifactgenerator \
+  Rscript /data/generate.R
+```
+
+with the script using the mounted paths:
+
+```r
+nc_root  <- "/data/input"
+out_root <- "/data/output"
+```
+
+The container already has the package installed, so the script can start directly with `library('ncartifactgenerator')`. Alternatively, you can open an interactive R session inside the container:
+
+```sh
+docker run --rm -it \
+  -v /path/to/nc/input:/data/input:ro \
+  -v /path/to/web/output:/data/output \
+  ncartifactgenerator R
+```
+
+### Using the image as a Dev Container
+
+The image can also be used as a [VS Code Dev Container](https://containers.dev/), which is convenient for developing the package itself: instead of only *running* a script inside the container (as above), VS Code (and forks) attaches to the container and the integrated terminal, the R interpreter and any extensions run inside it, while the project directory on your disk is mounted into the container so you edit the real source files.
+
+The repository ships a ready-to-use configuration in [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json):
+
+```jsonc
+{
+	"name": "ncartifactgenerator",
+	"build": {
+		"dockerfile": "../docker/Dockerfile",
+		"context": "../docker"
+	},
+	"features": {
+		"ghcr.io/rocker-org/devcontainer-features/rstudio-server": {}
+	},
+	"postCreateCommand": {
+		"rstudio-start": "rserver"
+	},
+	"forwardPorts": [8787]
+}
+```
+
+The `build` block points at the same [docker/Dockerfile](docker/Dockerfile) used for standalone `docker run` execution, so no manual `docker build` is needed: VS Code builds the image automatically the first time the devcontainer is opened. To use it:
+
+1. Open the repository in VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed.
+2. Run the *"Dev Containers: Reopen in Container"* command.
+
+VS Code builds the image (on first use), starts a container from it, mounts the repository under `/workspaces/ncartifactgenerator`, and every R session you open already has HDF5 1.14.2 and the patched `hdf5r` fork available, so you can iterate on the package with `devtools::load_all()` without touching your host system. The `features` block additionally installs **RStudio Server** inside the container, started automatically by the `postCreateCommand`; thanks to `forwardPorts`, it is reachable in your browser at `http://localhost:8787`.
+
+This works because the base image of the Dockerfile, `ghcr.io/rocker-org/devcontainer/tidyverse`, is specifically designed for devcontainer use and is compatible with the [rocker devcontainer features](https://github.com/rocker-org/devcontainer-features).
 
 
 ## Output

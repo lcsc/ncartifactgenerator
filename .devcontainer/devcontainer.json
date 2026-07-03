@@ -1,0 +1,17 @@
+// For format details, see https://aka.ms/devcontainer.json
+{
+	"name": "ncartifactgenerator",
+	// Built automatically from the same Dockerfile used for standalone docker runs
+	"build": {
+		"dockerfile": "../docker/Dockerfile",
+		"context": "../docker"
+	},
+	"features": {
+		"ghcr.io/rocker-org/devcontainer-features/rstudio-server": {}
+	},
+	"postCreateCommand": {
+		"rstudio-start": "rserver"
+	},
+	// RStudio Server, available at http://localhost:8787
+	"forwardPorts": [8787]
+}
