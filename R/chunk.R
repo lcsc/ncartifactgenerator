@@ -319,7 +319,7 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name, lat_nam
   )
 
   # Final file creation
-  print(paste0("   Debug: Chunk_xy ",out_file))
+  # print(paste0("   Debug: Chunk_xy ",out_file))
   nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
 
   # Link the variable to the projection variable using the
@@ -462,7 +462,7 @@ write_nc_t_chunk_dir <- function(in_file, out_file) {
 
   # Close files
   close(bin_out_file)
-  nc_in_file$close()
+  nc_in_file$close_all()
 }
 
 
@@ -499,7 +499,7 @@ write_nc_t_chunk_dir_iter <- function(in_file, out_file) {
 
   # Close files
   close(bin_out_file)
-  nc_in_file$close()
+  nc_in_file$close_all()
 }
 
 
@@ -533,7 +533,7 @@ write_nc_xy_chunk_dir <- function(in_file, out_file) {
 
   # Close files
   close(bin_out_file)
-  nc_in_file$close()
+  nc_in_file$close_all()
 }
 
 
@@ -565,7 +565,7 @@ write_nc_xy_chunk_dir_iter <- function(in_file, out_file) {
 
   # Close files
   close(bin_out_file)
-  nc_in_file$close()
+  nc_in_file$close_all()
 }
 
 
