@@ -319,6 +319,7 @@ write_nc_chunk_xy <- function(in_file, out_file, time_by = -1, lon_name, lat_nam
   )
 
   # Final file creation
+  print(paste0("   Debug: Chunk_xy ",out))
   nc_out_file <- nc_create(out_file, list(var, varCRS), force_v4 = TRUE)
 
   # Link the variable to the projection variable using the
